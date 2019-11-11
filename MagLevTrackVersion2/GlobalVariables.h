@@ -7,6 +7,9 @@
 #include <WS2812Serial.h> 
 #include <PID_v1.h>
 
+// CALIBRATION TABLES
+int intSensorCalibrationOffset[8] = {0,0,0,0,0,0,0,0};
+
 // PIN DECLARATIONS
 const int pinANALOGSELECT0 = 7; //(Rx3)
 const int pinANALOGSELECT1 = 10; //(Tx2)

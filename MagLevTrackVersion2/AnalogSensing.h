@@ -125,14 +125,14 @@ void beginAnalogSensors(){ // set default states
 
   
 void ExtractUsefulData(){
-  intSensorsNow[0]= extractData(0,1);
-  intSensorsNow[1]= extractData(0,6);
-  intSensorsNow[2]= extractData(0,11);
-  intSensorsNow[3]= extractData(0,16);
-  intSensorsNow[4]= extractData(0,21);
-  intSensorsNow[5]= extractData(0,26);
-  intSensorsNow[6]= extractData(0,31);
-  intSensorsNow[7]= extractData(0,36);
+  intSensorsNow[0]= extractData(0,1) + intSensorCalibrationOffset[0];
+  intSensorsNow[1]= extractData(0,6) + intSensorCalibrationOffset[1];
+  intSensorsNow[2]= extractData(0,11) + intSensorCalibrationOffset[2];
+  intSensorsNow[3]= extractData(0,16) + intSensorCalibrationOffset[3];
+  intSensorsNow[4]= extractData(0,21) + intSensorCalibrationOffset[4];
+  intSensorsNow[5]= extractData(0,26) + intSensorCalibrationOffset[5];
+  intSensorsNow[6]= extractData(0,31) + intSensorCalibrationOffset[6];
+  intSensorsNow[7]= extractData(0,36) + intSensorCalibrationOffset[7];
 
   // weak averaging function
   for (int i = 0; i < 8; i ++){

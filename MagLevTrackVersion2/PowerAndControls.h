@@ -91,6 +91,9 @@ void setupControlLoops(){
 }
 
 void updateControlLoops(){
+
+  // check if the control loops should be on or off!! ----------------------------------------------------------------------------------------------------------
+  
   myPID_Magnet0.Compute(); // this may not update every time through as the sensors are scanned faster than
   // the control loops update, and depending on delays, etc. they may not all update in the same
   // callback, causeing asynchronous updates. This shouldn't hurt anything though. The largest downside
