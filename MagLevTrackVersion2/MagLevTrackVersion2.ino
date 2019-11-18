@@ -12,7 +12,7 @@
 // ***************************************************************************************************************************************************
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(1000000);
   configureADCs(); // prep adcs for max speed
   configureMagnetDrives(); // set up pinmodes and default states
   // also set default magnet drive directions.
@@ -31,8 +31,11 @@ void loop() {
   ExtractUsefulData();
   lngScanEndTime = micros();
 
-  updateControlLoops();
+  updateControlLoops(); // will not always run, or may run for some magnets only. Happens fast enough
+  // that asynchronous updates won't matter.
   adjustMagnetPowerLevels();
+
+  printMagnetOneSettings();
 
   loopCounter +=1;
   
@@ -44,6 +47,10 @@ void loop() {
     leds.show();
   }
   //delay(30);
+}
+
+void printMagnetOneSettings(){
+  //Serial.print(micros());Serial.print(",");Serial.print(intSensorsNow[0]);Serial.print(",");Serial.println(intPowerNow[0]);
 }
 
  

@@ -16,23 +16,23 @@ const int pinANALOGSELECT1 = 10; //(Tx2)
 const int pinANALOGSELECT2 = 9; //(Rx2)
 const int pinIRONOFF = 0;
 const int pinLEDDATA = 1;
-const int pinMAGNETPWM0 = 0;
-const int pinMAGNETPWM1 = 0;
-const int pinMAGNETPWM2 = 0;
-const int pinMAGNETPWM3 = 0;
-const int pinMAGNETPWM4 = 0;
-const int pinMAGNETPWM5 = 0;
-const int pinMAGNETPWM6 = 0;
-const int pinMAGNETPWM7 = 0;
-const int pinMAGNETDIRECTION0 = 0;
-const int pinMAGNETDIRECTION1 = 0;
-const int pinMAGNETDIRECTION2 = 0;
-const int pinMAGNETDIRECTION3 = 0;
-const int pinMAGNETDIRECTION4 = 0;
-const int pinMAGNETDIRECTION5 = 0;
-const int pinMAGNETDIRECTION6 = 0;
-const int pinMAGNETDIRECTION7 = 0;
-const int pinMAGNETENABLE = 0;
+const int pinMAGNETPWM0 = 3;
+const int pinMAGNETPWM1 = 4;
+const int pinMAGNETPWM2 = 20;
+const int pinMAGNETPWM3 = 21;
+const int pinMAGNETPWM4 = 22;
+const int pinMAGNETPWM5 = 23;
+const int pinMAGNETPWM6 = 32;
+const int pinMAGNETPWM7 = 25;
+const int pinMAGNETDIRECTION0 = 5;
+const int pinMAGNETDIRECTION1 = 6;
+const int pinMAGNETDIRECTION2 = 14;
+const int pinMAGNETDIRECTION3 = 19;
+const int pinMAGNETDIRECTION4 = A10;
+const int pinMAGNETDIRECTION5 = 33;
+const int pinMAGNETDIRECTION6 = 24;
+const int pinMAGNETDIRECTION7 = 27;
+const int pinMAGNETENABLE = 28;
 
 // Variable Declarations
 int intScanCounter = 0;
@@ -68,7 +68,7 @@ int maxPower = 512; // 1024 max, based on 10 bit PWM. Shouldn't exceed 512 until
 // joule tracking.
 
 // KmCharacterization specific variables
-boolean debug = true;
+boolean debug = false;
 unsigned long lngPowerUpdateTime = 0;
 byte serialCommand;
 int powerLevel = 0;
@@ -77,6 +77,6 @@ int tmp = 0;
 int sensorValue = 0;
 int initSensorValue = 0;
 unsigned long cycleTimer = 1000;
-int sensorNoiseThreshold = 25;
+int sensorNoiseThreshold = 400;
 
 #endif

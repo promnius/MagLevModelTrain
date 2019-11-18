@@ -179,24 +179,32 @@ void colorWipe(int color, int wait) {
 // this is ugly . . .
 void plotAllGraphs(){
   // sensor data
-  updateBarGraph(intSensorsAvg[0], 2000, 12000, 0, 16, 2, 1, 255);  
-  updateBarGraph(intSensorsAvg[1], 2000, 12000, 32, 16, 2, 1, 255);  
-  updateBarGraph(intSensorsAvg[2], 2000, 12000, 64, 16, 2, 1, 255);
-  updateBarGraph(intSensorsAvg[3], 2000, 12000, 96, 16, 2, 1, 255);
-  updateBarGraph(intSensorsAvg[4], 2000, 12000, 128, 16, 2, 1, 255);
-  updateBarGraph(intSensorsAvg[5], 2000, 12000, 160, 16, 2, 1, 255);
-  updateBarGraph(intSensorsAvg[6], 2000, 12000, 192, 16, 2, 1, 255);
-  updateBarGraph(intSensorsAvg[7], 2000, 12000, 224, 16, 2, 1, 255);
+  updateBarGraph(intSensorsAvg[0], 2000, 12000, 0, 16, 1, 1, 255);  
+  updateBarGraph(intSensorsAvg[1], 2000, 12000, 32, 16, 1, 1, 255);  
+  updateBarGraph(intSensorsAvg[2], 2000, 12000, 64, 16, 1, 1, 255);
+  updateBarGraph(intSensorsAvg[3], 2000, 12000, 96, 16, 1, 1, 255);
+  updateBarGraph(intSensorsAvg[4], 2000, 12000, 128, 16, 1, 1, 255);
+  updateBarGraph(intSensorsAvg[5], 2000, 12000, 160, 16, 1, 1, 255);
+  updateBarGraph(intSensorsAvg[6], 2000, 12000, 192, 16, 1, 1, 255);
+  updateBarGraph(intSensorsAvg[7], 2000, 12000, 224, 16, 1, 1, 255);
 
   // power data --------------------------------------^----- this is the color channel.
-  updateBarGraph(intPowerAvg[0], 0, maxPower, 16, 16, 1, 1, 255);  
-  updateBarGraph(intPowerAvg[1], 0, maxPower, 48, 16, 1, 1, 255);  
-  updateBarGraph(intPowerAvg[2], 0, maxPower, 80, 16, 1, 1, 255);
-  updateBarGraph(intPowerAvg[3], 0, maxPower, 112, 16, 1, 1, 255);
-  updateBarGraph(intPowerAvg[4], 0, maxPower, 144, 16, 1, 1, 255);
-  updateBarGraph(intPowerAvg[5], 0, maxPower, 176, 16, 1, 1, 255);
-  updateBarGraph(intPowerAvg[6], 0, maxPower, 208, 16, 1, 1, 255);
-  updateBarGraph(intPowerAvg[7], 0, maxPower, 240, 16, 1, 1, 255);
+  if (intPowerAvg[0] < 0){updateBarGraph(abs(intPowerAvg[0]), 0, maxPower, 16, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[0]), 0, maxPower, 16, 16, 2, 1, 255);}
+  if (intPowerAvg[1] < 0){updateBarGraph(abs(intPowerAvg[1]), 0, maxPower, 48, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[1]), 0, maxPower, 48, 16, 2, 1, 255);}
+  if (intPowerAvg[2] < 0){updateBarGraph(abs(intPowerAvg[2]), 0, maxPower, 80, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[2]), 0, maxPower, 80, 16, 2, 1, 255);}
+  if (intPowerAvg[3] < 0){updateBarGraph(abs(intPowerAvg[3]), 0, maxPower, 112, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[3]), 0, maxPower, 112, 16, 2, 1, 255);}
+  if (intPowerAvg[4] < 0){updateBarGraph(abs(intPowerAvg[4]), 0, maxPower, 144, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[4]), 0, maxPower, 144, 16, 2, 1, 255);}
+  if (intPowerAvg[5] < 0){updateBarGraph(abs(intPowerAvg[5]), 0, maxPower, 176, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[5]), 0, maxPower, 176, 16, 2, 1, 255);}
+  if (intPowerAvg[6] < 0){updateBarGraph(abs(intPowerAvg[6]), 0, maxPower, 208, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[6]), 0, maxPower, 208, 16, 2, 1, 255);}
+  if (intPowerAvg[7] < 0){updateBarGraph(abs(intPowerAvg[7]), 0, maxPower, 240, 16, 0, 1, 255);}  
+  else{updateBarGraph(abs(intPowerAvg[7]), 0, maxPower, 240, 16, 2, 1, 255);}
 }
 
 void plotPositionAve(){

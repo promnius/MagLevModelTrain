@@ -8,15 +8,15 @@
 #define PIN_INPUT 0
 #define PIN_OUTPUT 3
 
-int delayTime = 3000; // ms
+int delayTime = 6000; // ms
 
 //Define Variables we'll be connecting to
 double Setpoint, Input, Output;
 
 //Specify the links and initial tuning parameters
 double Kp=1, Ki=1, Kd=1;
-double myArray[9][2] = {{0,0},{1,1},{2,2},{3,4},{4,8},{5,16},{6,32},{7,64},{8,128};
-PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT, myArray);
+double myArray[9][2] = {{0,0},{1,1},{2,2},{3,4},{4,8},{5,16},{6,32},{7,64},{8,128}};
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT, myArray, 9);
 
 void setup()
 {
@@ -28,6 +28,11 @@ void setup()
   //turn the PID on
   myPID.SetSampleTime(1000);
   myPID.SetMode(AUTOMATIC);
+
+  delay(delayTime);
+
+  //Serial.print("UPDATE MAIN LOOP: Math check: "); Serial.print(sizeof(myArray[0])/sizeof(myArray[0][0])); ///sizeof(km[0])))-1);
+  //Serial.print(","); Serial.println(sizeof(myArray)/sizeof(myArray[0]));
 }
 
 void loop()

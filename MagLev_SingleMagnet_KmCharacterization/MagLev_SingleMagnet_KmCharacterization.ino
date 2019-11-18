@@ -14,6 +14,8 @@
 #include "GlobalVariables.h"
 #include "PowerAndControls.h"
 
+boolean testNegativePower = false;
+
 
 
 // ***************************************************************************************************************************************************
@@ -54,7 +56,7 @@ void loop() {
       serialCommand = Serial.read();
       if(serialCommand == 'p'){
         if(debug){Serial.println("Recieved command to start new cycle");}
-        powerLevel = 0;
+        if (testNegativePower){powerLevel = -maxPower;} else {powerLevel = 0;}
         lngPowerUpdateTime = millis();
         loopActive = true;
         initSensorValue = intSensorsNow[0];
@@ -71,6 +73,7 @@ void loop() {
     tmp = sensorValue - initSensorValue;
     if (abs(tmp) > sensorNoiseThreshold) { // the target has moved!!!
       if(debug){Serial.println("Target moved, cycle over!");}
+      if(debug){Serial.print("DEBUG: Final sensor value: "); Serial.println(sensorValue);}
       Serial.print(initSensorValue); Serial.print(","); Serial.println(powerLevel);
       powerLevel = 0;
       loopActive = false;

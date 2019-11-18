@@ -71,14 +71,14 @@ void setupControlLoops(){
   myPID_Magnet6.SetSampleTime(sampleTime); 
   myPID_Magnet7.SetSampleTime(sampleTime);
 
-  myPID_Magnet0.SetOutputLimits(0, maxPower); 
-  myPID_Magnet1.SetOutputLimits(0, maxPower); 
-  myPID_Magnet2.SetOutputLimits(0, maxPower); 
-  myPID_Magnet3.SetOutputLimits(0, maxPower); 
-  myPID_Magnet4.SetOutputLimits(0, maxPower); 
-  myPID_Magnet5.SetOutputLimits(0, maxPower); 
-  myPID_Magnet6.SetOutputLimits(0, maxPower); 
-  myPID_Magnet7.SetOutputLimits(0, maxPower); 
+  myPID_Magnet0.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet1.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet2.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet3.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet4.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet5.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet6.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet7.SetOutputLimits(-maxPower, maxPower); 
   
   myPID_Magnet0.SetMode(AUTOMATIC); // for now we want to play with a single magnet
   //myPID_Magnet1.SetMode(AUTOMATIC);
@@ -121,19 +121,36 @@ void updateControlLoops(){
   // weak averaging function
   for (int i = 0; i < 8; i ++){
     intPowerNow[i] = (int)PID_OutputMagnetCommand[i];
-    intPowerAvg[i] = ((intPowerAvg[i]*3)/4)+ (intPowerNow[i]/4);
+    //intPowerAvg[i] = ((intPowerAvg[i]*3)/4)+ (intPowerNow[i]/4);
+    intPowerAvg[i] = intPowerNow[i]; // no averaging
   }
 }
 
 void adjustMagnetPowerLevels(){
-  analogWrite(pinMAGNETPWM0, intPowerNow[0]);
+  if (intPowerNow[0]<0){digitalWrite(pinMAGNETDIRECTION0, MAGNET0NORTH);}else{digitalWrite(pinMAGNETDIRECTION0, !MAGNET0NORTH);}
+  analogWrite(pinMAGNETPWM0, maxResolution - abs(intPowerNow[0]));
+  if (intPowerNow[1]<0){digitalWrite(pinMAGNETDIRECTION1, MAGNET1NORTH);}else{digitalWrite(pinMAGNETDIRECTION1, !MAGNET1NORTH);}
+  analogWrite(pinMAGNETPWM1, maxResolution - abs(intPowerNow[1]));
+  if (intPowerNow[2]<0){digitalWrite(pinMAGNETDIRECTION2, MAGNET2NORTH);}else{digitalWrite(pinMAGNETDIRECTION2, !MAGNET2NORTH);}
+  analogWrite(pinMAGNETPWM2, maxResolution - abs(intPowerNow[2]));
+  if (intPowerNow[3]<0){digitalWrite(pinMAGNETDIRECTION3, MAGNET3NORTH);}else{digitalWrite(pinMAGNETDIRECTION3, !MAGNET3NORTH);}
+  analogWrite(pinMAGNETPWM3, maxResolution - abs(intPowerNow[3]));
+  if (intPowerNow[4]<0){digitalWrite(pinMAGNETDIRECTION4, MAGNET4NORTH);}else{digitalWrite(pinMAGNETDIRECTION4, !MAGNET4NORTH);}
+  analogWrite(pinMAGNETPWM4, maxResolution - abs(intPowerNow[4]));
+  if (intPowerNow[5]<0){digitalWrite(pinMAGNETDIRECTION5, MAGNET5NORTH);}else{digitalWrite(pinMAGNETDIRECTION5, !MAGNET5NORTH);}
+  analogWrite(pinMAGNETPWM5, maxResolution - abs(intPowerNow[5]));
+  if (intPowerNow[6]<0){digitalWrite(pinMAGNETDIRECTION6, MAGNET6NORTH);}else{digitalWrite(pinMAGNETDIRECTION6, !MAGNET6NORTH);}
+  analogWrite(pinMAGNETPWM6, maxResolution - abs(intPowerNow[6]));
+  if (intPowerNow[7]<0){digitalWrite(pinMAGNETDIRECTION7, MAGNET7NORTH);}else{digitalWrite(pinMAGNETDIRECTION7, !MAGNET7NORTH);}
+  analogWrite(pinMAGNETPWM7, maxResolution - abs(intPowerNow[7]));
+  /*analogWrite(pinMAGNETPWM0, intPowerNow[0]);
   analogWrite(pinMAGNETPWM1, intPowerNow[1]);
   analogWrite(pinMAGNETPWM2, intPowerNow[2]);
   analogWrite(pinMAGNETPWM3, intPowerNow[3]);
   analogWrite(pinMAGNETPWM4, intPowerNow[4]);
   analogWrite(pinMAGNETPWM5, intPowerNow[5]);
   analogWrite(pinMAGNETPWM6, intPowerNow[6]);
-  analogWrite(pinMAGNETPWM7, intPowerNow[7]);
+  analogWrite(pinMAGNETPWM7, intPowerNow[7]);*/
 }
 
 #endif

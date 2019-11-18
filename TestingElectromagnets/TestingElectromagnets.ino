@@ -1,14 +1,28 @@
 
-#ifndef PowerAndControls_h
-#define PowerAndControls_h
-
-#include "Arduino.h"
-#include "GlobalVariables.h"
-#include "LEDManagement.h"
 
 
-void configureMagnetDrives(){ // set up pinmodes and default states
-	pinMode(pinMAGNETPWM0, OUTPUT);
+const int pinMAGNETPWM0 = 3;
+const int pinMAGNETPWM1 = 4;
+const int pinMAGNETPWM2 = 20;
+const int pinMAGNETPWM3 = 21;
+const int pinMAGNETPWM4 = 22;
+const int pinMAGNETPWM5 = 23;
+const int pinMAGNETPWM6 = 32;
+const int pinMAGNETPWM7 = 25;
+const int pinMAGNETDIRECTION0 = 5;
+const int pinMAGNETDIRECTION1 = 6;
+const int pinMAGNETDIRECTION2 = 14;
+const int pinMAGNETDIRECTION3 = 19;
+const int pinMAGNETDIRECTION4 = A10;
+const int pinMAGNETDIRECTION5 = 33;
+const int pinMAGNETDIRECTION6 = 24;
+const int pinMAGNETDIRECTION7 = 27;
+const int pinMAGNETENABLE = 28;
+
+int counter = 0;
+
+void setup() {
+  pinMode(pinMAGNETPWM0, OUTPUT);
   pinMode(pinMAGNETPWM1, OUTPUT);
   pinMode(pinMAGNETPWM2, OUTPUT);
   pinMode(pinMAGNETPWM3, OUTPUT);
@@ -37,14 +51,14 @@ void configureMagnetDrives(){ // set up pinmodes and default states
   digitalWrite(pinMAGNETPWM6, HIGH);
   digitalWrite(pinMAGNETPWM7, HIGH);
   
-  digitalWrite(pinMAGNETDIRECTION0, LOW);
+  digitalWrite(pinMAGNETDIRECTION0, HIGH);
   digitalWrite(pinMAGNETDIRECTION1, LOW);
-  digitalWrite(pinMAGNETDIRECTION2, LOW);
+  digitalWrite(pinMAGNETDIRECTION2, HIGH);
   digitalWrite(pinMAGNETDIRECTION3, LOW);
   digitalWrite(pinMAGNETDIRECTION4, LOW);
   digitalWrite(pinMAGNETDIRECTION5, LOW);
   digitalWrite(pinMAGNETDIRECTION6, LOW);
-  digitalWrite(pinMAGNETDIRECTION7, LOW);
+  digitalWrite(pinMAGNETDIRECTION7, HIGH);
 
   digitalWrite(pinMAGNETENABLE, HIGH);
 
@@ -61,18 +75,16 @@ void configureMagnetDrives(){ // set up pinmodes and default states
   analogWriteFrequency(pinMAGNETPWM7, 46875);
 }
 
-int maxResolution = 1024;
-boolean MAGNET0NORTH = HIGH;
-void adjustMagnetPowerLevels(){
-  if (powerLevel<0){digitalWrite(pinMAGNETDIRECTION0, MAGNET0NORTH);}else{digitalWrite(pinMAGNETDIRECTION0, !MAGNET0NORTH);}
-  analogWrite(pinMAGNETPWM0, maxResolution - abs(powerLevel));
-  //analogWrite(pinMAGNETPWM1, powerLevel);
-  //analogWrite(pinMAGNETPWM2, powerLevel);
-  //analogWrite(pinMAGNETPWM3, powerLevel);
-  //analogWrite(pinMAGNETPWM4, powerLevel);
-  //analogWrite(pinMAGNETPWM5, powerLevel);
-  //analogWrite(pinMAGNETPWM6, powerLevel);
-  //analogWrite(pinMAGNETPWM7, powerLevel);
-}
+void loop() {
+  analogWrite(pinMAGNETPWM0, 600);
+  analogWrite(pinMAGNETPWM1, 600);
+  analogWrite(pinMAGNETPWM2, 600);
+  // put your main code here, to run repeatedly:
+  for (counter = 0; counter < 512; counter ++){
+    //analogWrite(pinMAGNETPWM0, 1024 - counter);
+    //analogWrite(pinMAGNETPWM7, 1024 - counter);
+    Serial.print("Power: "); Serial.println(counter);
+    delay(300);
+  }
 
-#endif
+}
