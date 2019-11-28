@@ -1,0 +1,23 @@
+Single magnet system characterization data
+
+for use verifying against model
+
+Experiment: apply full power to electromagnet with various thicknesses of plastic plate between electromagnet and target.
+place target below electromagnet so it gets pulled up by the electromagnet.
+slowly decrease power (and eventually go negative if needed) until target falls
+record power level required to make magnet fall at a given height
+
+target mass: 29 grams
+screw head present (screw lowers effective base by 100 thou), distance (from base, so touching does NOT mean 0) in thousanths of an inch, 
+power in pwm steps out of 1024 (so 512 means 50% duty cycle, 12V supply), estimated current in amps (based on power and a resistance of 3.7 ohms)
+yes, touching (100), -244, -.77
+yes, 152, -136, 
+yes, 317, 206
+yes, 400, 424
+
+no, touching (0), -228
+no, 35, -160
+no, 117, -54
+no, 152, 38
+no, 235, 204
+no, 317, 406
