@@ -71,18 +71,18 @@ void setupControlLoops(){
   myPID_Magnet6.SetSampleTime(sampleTime); 
   myPID_Magnet7.SetSampleTime(sampleTime);
 
-  myPID_Magnet0.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet1.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet2.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet3.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet4.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet5.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet6.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet7.SetOutputLimits(-maxPower, maxPower); 
+  myPID_Magnet0.SetOutputLimits(0, maxPower); 
+  myPID_Magnet1.SetOutputLimits(0, maxPower); 
+  myPID_Magnet2.SetOutputLimits(0, maxPower); 
+  myPID_Magnet3.SetOutputLimits(0, maxPower); 
+  myPID_Magnet4.SetOutputLimits(0, maxPower); 
+  myPID_Magnet5.SetOutputLimits(0, maxPower); 
+  myPID_Magnet6.SetOutputLimits(0, maxPower); 
+  myPID_Magnet7.SetOutputLimits(0, maxPower); 
   
   myPID_Magnet0.SetMode(AUTOMATIC); // for now we want to play with a single magnet
   myPID_Magnet1.SetMode(AUTOMATIC);
-  //myPID_Magnet2.SetMode(AUTOMATIC);
+  myPID_Magnet2.SetMode(AUTOMATIC);
   myPID_Magnet3.SetMode(AUTOMATIC);
   //myPID_Magnet4.SetMode(AUTOMATIC);
   //myPID_Magnet5.SetMode(AUTOMATIC);

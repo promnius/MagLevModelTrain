@@ -69,14 +69,14 @@ int maxPower = 512; // 1024 max, based on 10 bit PWM. Shouldn't exceed 512 until
 // joule tracking.
 int sampleTime = 1; // ms
 // setpoint for round double Setpoint = 6000; // hopefully we can use the same setpoint for all of them!!
-double Setpoint = 8000;
+double Setpoint = 8500;
 double PID_InputFromSensors[8]; // these are actually duplicate registers, just as doubles . . . could just cast in place
 double PID_OutputMagnetCommand[8];
 // controls for round, no Km table double Kp=.2, Ki=0, Kd=.01; // for now hopefully we can use the same for every magnet
 // controls for round, Km table double Kp=.05, Ki=0, Kd=.006;
-double Kp=.1, Ki=0, Kd=.1;
+double Kp=5, Ki=0, Kd=.01;
 //double KmTable[4][2] = {{0,350},{7300,0},{8000,-80},{12000,-800}};
-double KmTable[4][2] = {{0,0},{1,0},{2,0},{3,0}};
+double KmTable[4][2] = {{0,0},{1,0},{2,0},{16000,600}};
 double KmTableLength = 4; // Make this calculated soon!!
 PID myPID_Magnet0(&PID_InputFromSensors[0], &PID_OutputMagnetCommand[0], &Setpoint, Kp, Ki, Kd, DIRECT, KmTable, KmTableLength);
 PID myPID_Magnet1(&PID_InputFromSensors[1], &PID_OutputMagnetCommand[1], &Setpoint, Kp, Ki, Kd, DIRECT, KmTable, KmTableLength);
@@ -86,10 +86,10 @@ PID myPID_Magnet4(&PID_InputFromSensors[4], &PID_OutputMagnetCommand[4], &Setpoi
 PID myPID_Magnet5(&PID_InputFromSensors[5], &PID_OutputMagnetCommand[5], &Setpoint, Kp, Ki, Kd, DIRECT, KmTable, KmTableLength);
 PID myPID_Magnet6(&PID_InputFromSensors[6], &PID_OutputMagnetCommand[6], &Setpoint, Kp, Ki, Kd, DIRECT, KmTable, KmTableLength);
 PID myPID_Magnet7(&PID_InputFromSensors[7], &PID_OutputMagnetCommand[7], &Setpoint, Kp, Ki, Kd, DIRECT, KmTable, KmTableLength);
-boolean MAGNET0NORTH = LOW;
+boolean MAGNET0NORTH = HIGH;
 boolean MAGNET1NORTH = HIGH;
-boolean MAGNET2NORTH = HIGH;
-boolean MAGNET3NORTH = HIGH;
+boolean MAGNET2NORTH = LOW;
+boolean MAGNET3NORTH = LOW;
 boolean MAGNET4NORTH = LOW;
 boolean MAGNET5NORTH = LOW;
 boolean MAGNET6NORTH = LOW;

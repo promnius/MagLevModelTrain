@@ -14,7 +14,7 @@
 #include "GlobalVariables.h"
 #include "PowerAndControls.h"
 
-boolean testNegativePower = false;
+boolean testNegativePower = true;
 
 
 

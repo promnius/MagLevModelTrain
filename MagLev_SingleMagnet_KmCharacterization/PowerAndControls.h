@@ -62,7 +62,7 @@ void configureMagnetDrives(){ // set up pinmodes and default states
 }
 
 int maxResolution = 1024;
-boolean MAGNET0NORTH = HIGH;
+boolean MAGNET0NORTH = LOW;
 void adjustMagnetPowerLevels(){
   if (powerLevel<0){digitalWrite(pinMAGNETDIRECTION0, MAGNET0NORTH);}else{digitalWrite(pinMAGNETDIRECTION0, !MAGNET0NORTH);}
   analogWrite(pinMAGNETPWM0, maxResolution - abs(powerLevel));
