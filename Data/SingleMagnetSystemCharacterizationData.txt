@@ -21,3 +21,6 @@ no, 117, -54
 no, 152, 38
 no, 235, 204
 no, 317, 406
+
+simulation results (2D):
+no screw, 100 airgap, .33N (no current): 33 grams. so would need a slightly negative current to drop a 29 gram item. spot on.
