@@ -1,0 +1,41 @@
+CTFluxHeightLength = 21
+CTFLuxHeightuTuI = [
+[0,67250.834401805],
+[50000,64546.1618567283],
+[100000,58548.1935408013],
+[150000,50664.1604473644],
+[200000,42605.3864461497],
+[250000,35142.5228904372],
+[300000,28835.4521882068],
+[350000,23550.9571235558],
+[400000,19292.3126852819],
+[450000,15894.9197610003],
+[500000,13182.5814575458],
+[550000,10937.3001001304],
+[600000,9185.21981781983],
+[650000,7783.69149853531],
+[700000,6583.32130348844],
+[750000,5665.55765554804],
+[800000,4878.11827486569],
+[850000,4197.56466116529],
+[900000,3683.82543200177],
+[950000,3223.74710723291],
+[1000000,2785.64206333253]]
+
+
+maxSensorValue_uT = 63000
+y0 = 0
+y1 = 0
+x0 = 0
+x1 = 0
+intMaxHeight_uI = 0
+for i in range(CTFluxHeightLength-1):
+	print (str(CTFLuxHeightuTuI[i][0]) + "," + str(CTFLuxHeightuTuI[i+1][0]))
+	if (maxSensorValue_uT >= CTFLuxHeightuTuI[i][0] and maxSensorValue_uT < CTFLuxHeightuTuI[i+1][0]):
+		y0 = CTFLuxHeightuTuI[i][1]
+		y1 = CTFLuxHeightuTuI[i + 1][1]
+		x0 = CTFLuxHeightuTuI[i][0]
+		x1 = CTFLuxHeightuTuI[i + 1][0]
+		intMaxHeight_uI = y0 + ((y1 - y0) * ((maxSensorValue_uT - x0) / (x1 - x0)))
+
+print(intMaxHeight_uI)

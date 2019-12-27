@@ -1,0 +1,36 @@
+const long PROGMEM CTFLuxHeightuTuI[][] = {
+    {67250,0},
+    {64546,50000},
+    {58548,100000},
+    {50664,150000},
+    {42605,200000},
+    {35142,250000},
+    {28835,300000},
+    {23550,350000},
+    {19292,400000},
+    {15894,450000},
+    {13182,500000},
+    {10937,550000},
+    {9185,600000},
+    {7783,650000},
+    {6583,700000},
+    {5665,750000},
+    {4878,800000},
+    {4197,850000},
+    {3683,900000},
+    {3223,950000},
+    {2785,1000000}};
+
+void extractVerticalPosition(){
+  long y0,y1,x0,x1;
+  intMaxHeight_uI = 0;
+  for (int i = 0; i < CTFluxHeightLength-1; i ++){
+    if (maxSensorValue_uT >= pgm_read_byte(&CTFLuxHeightuTuI[i][0]) && maxSensorValue_uT < pgm_read_byte(&CTFLuxHeightuTuI[i+1][0])){
+      y0 = km[i][1];  //lower bound
+      y1 = km[i + 1][1]; //upper bound
+      x0 = km[i][0];
+      x1 = km[i + 1][0];
+      intMaxHeight_uI = y0 + ((y1 - y0) * ((maxSensorValue_uT - x0) / (x1 - x0)));
+    }
+  }
+}
