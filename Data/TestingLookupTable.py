@@ -23,14 +23,14 @@ CTFLuxHeightuTuI = [
 [1000000,2785.64206333253]]
 
 
-maxSensorValue_uT = 63000
+maxSensorValue_uT = 368000
 y0 = 0
 y1 = 0
 x0 = 0
 x1 = 0
 intMaxHeight_uI = 0
 for i in range(CTFluxHeightLength-1):
-	print (str(CTFLuxHeightuTuI[i][0]) + "," + str(CTFLuxHeightuTuI[i+1][0]))
+	#print (str(CTFLuxHeightuTuI[i][1]) + "," + str(CTFLuxHeightuTuI[i+1][1]))
 	if (maxSensorValue_uT >= CTFLuxHeightuTuI[i][0] and maxSensorValue_uT < CTFLuxHeightuTuI[i+1][0]):
 		y0 = CTFLuxHeightuTuI[i][1]
 		y1 = CTFLuxHeightuTuI[i + 1][1]

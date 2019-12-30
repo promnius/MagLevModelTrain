@@ -4,8 +4,9 @@
 
 #include "Arduino.h"
 #include "GlobalVariables.h"
-#include "AnalogSensing.h"
+#include "LookupTables.h"
 #include "HelperFunctions.h"
+#include "AnalogSensing.h"
 
 #define RED    0xFF0000
 #define GREEN  0x00FF00
@@ -14,31 +15,6 @@
 #define PINK   0xFF1088
 #define ORANGE 0xE05800
 //#define WHITE  0xFFFFFF
-
-const uint8_t PROGMEM gamma8[] = {
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
-    1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
-    2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
-    5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
-   10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
-   17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
-   25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
-   37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
-   51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
-   69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
-   90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
-  115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142,
-  144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
-  177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
-  215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
-
-// fancy variables for LEDs
-const int numled = 384;
-byte drawingMemory[numled*3];         //  3 bytes per LED
-DMAMEM byte displayMemory[numled*12]; // 12 bytes per LED
-WS2812Serial leds(numled, displayMemory, drawingMemory, pinLEDDATA, WS2812_GRB);
-
 
 // may be faster to pass around uint8s instead of ints.
 void setPixelChannel(int num, uint8_t value, int channel) {
@@ -179,32 +155,16 @@ void plotAllGraphs(){
     // plot the average of 100 samples, in uT/100 (so tens of mT), from 0mT to 100mT
     updateBarGraph(getAverageOfArray(intBarGraphHeights[i],100)/100, 0, 1000, i*32, 16, 1, 1, 255);  
   }
-  /*
-  updateBarGraph(intSensorsAvg[1], 2000, 12000, 32, 16, 1, 1, 255);  
-  updateBarGraph(intSensorsAvg[2], 2000, 12000, 64, 16, 1, 1, 255);
-  updateBarGraph(intSensorsAvg[3], 2000, 12000, 96, 16, 1, 1, 255);
-  updateBarGraph(intSensorsAvg[4], 2000, 12000, 128, 16, 1, 1, 255);
-  updateBarGraph(intSensorsAvg[5], 2000, 12000, 160, 16, 1, 1, 255);
-  updateBarGraph(intSensorsAvg[6], 2000, 12000, 192, 16, 1, 1, 255);
-  updateBarGraph(intSensorsAvg[7], 2000, 12000, 224, 16, 1, 1, 255);
-
+  
+  for (int i = 0; i < 8; i ++){
+    //if (magnetActive[i]){
+    if (true){
+      if (targetPolarity == false){updateBarGraph(targetPWM, 0, maxPower, 16+32*i, 16, 0, 1, 255);}  
+      else{updateBarGraph(targetPWM, 0, maxPower, 16+32*i, 16, 2, 1, 255);}
+    }
+  }
   // power data --------------------------------------^----- this is the color channel.
-  if (intPowerAvg[0] < 0){updateBarGraph(abs(intPowerAvg[0]), 0, maxPower, 16, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[0]), 0, maxPower, 16, 16, 2, 1, 255);}
-  if (intPowerAvg[1] < 0){updateBarGraph(abs(intPowerAvg[1]), 0, maxPower, 48, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[1]), 0, maxPower, 48, 16, 2, 1, 255);}
-  if (intPowerAvg[2] < 0){updateBarGraph(abs(intPowerAvg[2]), 0, maxPower, 80, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[2]), 0, maxPower, 80, 16, 2, 1, 255);}
-  if (intPowerAvg[3] < 0){updateBarGraph(abs(intPowerAvg[3]), 0, maxPower, 112, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[3]), 0, maxPower, 112, 16, 2, 1, 255);}
-  if (intPowerAvg[4] < 0){updateBarGraph(abs(intPowerAvg[4]), 0, maxPower, 144, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[4]), 0, maxPower, 144, 16, 2, 1, 255);}
-  if (intPowerAvg[5] < 0){updateBarGraph(abs(intPowerAvg[5]), 0, maxPower, 176, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[5]), 0, maxPower, 176, 16, 2, 1, 255);}
-  if (intPowerAvg[6] < 0){updateBarGraph(abs(intPowerAvg[6]), 0, maxPower, 208, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[6]), 0, maxPower, 208, 16, 2, 1, 255);}
-  if (intPowerAvg[7] < 0){updateBarGraph(abs(intPowerAvg[7]), 0, maxPower, 240, 16, 0, 1, 255);}  
-  else{updateBarGraph(abs(intPowerAvg[7]), 0, maxPower, 240, 16, 2, 1, 255);}*/
+
   plotPositionAve();
 }
 

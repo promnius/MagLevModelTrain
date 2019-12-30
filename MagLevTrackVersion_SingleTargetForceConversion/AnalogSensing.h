@@ -5,36 +5,9 @@
 #include "Arduino.h"
 #include "GlobalVariables.h"
 #include "HelperFunctions.h"
+#include "LookupTables.h"
 
 
-
-
-int CTFluxHeightLength = 23;
-// {flux,height} in uT,uI. flux stricktly increasing, first entry must includ flux = min (0), last must include flux = max
-const long PROGMEM CTFLuxHeightuTuI[][2] = {
-    {0,1000000},
-    {2785,1000000},
-    {3223,950000},
-    {3683,900000},
-    {4197,850000},
-    {4878,800000},
-    {5665,750000},
-    {6583,700000},
-    {7783,650000},
-    {9185,600000},
-    {10937,550000},
-    {13182,500000},
-    {15894,450000},
-    {19292,400000},
-    {23550,350000},
-    {28835,300000},
-    {35142,250000},
-    {42605,200000},
-    {50664,150000},
-    {58548,100000},
-    {64546,50000},
-    {67250,0},
-    {200000,0}};
 
 void extractVerticalPosition(){
   long y0,y1,x0,x1;
@@ -46,11 +19,10 @@ void extractVerticalPosition(){
       x0 = (long) pgm_read_dword(&CTFLuxHeightuTuI[i][0]);
       x1 = (long) pgm_read_dword(&CTFLuxHeightuTuI[i + 1][0]);
       intMaxHeight_uI = y0 + ((y1 - y0) * (maxSensorValue_uT - x0)) / (x1 - x0);
-      //Serial.println((maxSensorValue_uT - x0));
-      //Serial.print(intMaxHeight_uI); Serial.print("="); Serial.print(y0);Serial.print(","); Serial.print(y1);Serial.print(","); Serial.print(x0);Serial.print(","); Serial.print(x1);Serial.print(","); Serial.println(maxSensorValue_uT);
-      //delay(200);
     }
   }
+  intMaxHeight_uI = intMaxHeight_uI- 35000; // compensation for the die being lower than the part
+  intMaxHeight_uI = 360000 - intMaxHeight_uI;
 }
 
 // allows a single function call for setting a mux channel. Note: this function currently
@@ -150,6 +122,7 @@ void calibrateSensors(){
 void ApplySensorCalibration(int i){
   intSensorData_uT[i] = intSensorData_uT[i] - intSensorCalibrationOffset[i];
   intSensorData_uT[i] = (intSensorData_uT[i]*100)/intSensorCalibrationScalar[i];
+  intSensorData_uT[i] = (intSensorData_uT[i] * 1100)/1000;
 }
   
 void ExtractUsefulData(){
@@ -160,6 +133,7 @@ void ExtractUsefulData(){
     intSensorData_uV[i] = intSensorData_uV[i] - 1000000; // adjust for 0 offset, since sensor data is bidirectional
     intSensorData_uT[i] = intSensorData_uV[i] / 11; // sensors have 11mV/mT, so convert to uT
     ApplySensorCalibration(i);
+    intSensorData_uT[i] = abs(intSensorData_uT[i]); // this is crude and gives up information.
     if (intSensorData_uT_Max[i] < intSensorData_uT[i]){intSensorData_uT_Max[i] = intSensorData_uT[i];}
     if (intSensorData_uT_Min[i] > intSensorData_uT[i]){intSensorData_uT_Min[i] = intSensorData_uT[i];}
   }
@@ -203,6 +177,7 @@ void ExtractUsefulData(){
   intBarGraphPositions[loopCounter] = maxSensorValueLocation*10; // the times 10 gives us some buffer for integer math
 
   // update max sensor value based on the known central position, to eradicate the 'horns' effect
+  // NOT IMPLEMENTED YET- IT ONLY MATTERS FOR HEIGHTS WE CANT CONTROL ANYWAYS
   //maxSensorValue_uT = intSensorData_uT[maxSensorValueLocation/2];
   extractVerticalPosition();
 

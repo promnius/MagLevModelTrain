@@ -5,152 +5,150 @@
 #include "Arduino.h"
 #include "GlobalVariables.h"
 #include "LEDManagement.h"
-#include <PID_v1.h>
 
 void configureMagnetDrives(){ // set up pinmodes and default states
-	pinMode(pinMAGNETPWM0, OUTPUT);
-  pinMode(pinMAGNETPWM1, OUTPUT);
-  pinMode(pinMAGNETPWM2, OUTPUT);
-  pinMode(pinMAGNETPWM3, OUTPUT);
-  pinMode(pinMAGNETPWM4, OUTPUT);
-  pinMode(pinMAGNETPWM5, OUTPUT);
-  pinMode(pinMAGNETPWM6, OUTPUT);
-  pinMode(pinMAGNETPWM7, OUTPUT);
-  
-  pinMode(pinMAGNETDIRECTION0, OUTPUT);
-  pinMode(pinMAGNETDIRECTION1, OUTPUT);
-  pinMode(pinMAGNETDIRECTION2, OUTPUT);
-  pinMode(pinMAGNETDIRECTION3, OUTPUT);
-  pinMode(pinMAGNETDIRECTION4, OUTPUT);
-  pinMode(pinMAGNETDIRECTION5, OUTPUT);
-  pinMode(pinMAGNETDIRECTION6, OUTPUT);
-  pinMode(pinMAGNETDIRECTION7, OUTPUT);
-  
   pinMode(pinMAGNETENABLE, OUTPUT);
+  digitalWrite(pinMAGNETENABLE, LOW);
   
-  digitalWrite(pinMAGNETPWM0, LOW);
-  digitalWrite(pinMAGNETPWM1, LOW);
-  digitalWrite(pinMAGNETPWM2, LOW);
-  digitalWrite(pinMAGNETPWM3, LOW);
-  digitalWrite(pinMAGNETPWM4, LOW);
-  digitalWrite(pinMAGNETPWM5, LOW);
-  digitalWrite(pinMAGNETPWM6, LOW);
-  digitalWrite(pinMAGNETPWM7, LOW);
-  
-  digitalWrite(pinMAGNETDIRECTION0, LOW);
-  digitalWrite(pinMAGNETDIRECTION1, LOW);
-  digitalWrite(pinMAGNETDIRECTION2, LOW);
-  digitalWrite(pinMAGNETDIRECTION3, LOW);
-  digitalWrite(pinMAGNETDIRECTION4, LOW);
-  digitalWrite(pinMAGNETDIRECTION5, LOW);
-  digitalWrite(pinMAGNETDIRECTION6, LOW);
-  digitalWrite(pinMAGNETDIRECTION7, LOW);
-
-  digitalWrite(pinMAGNETENABLE, HIGH);
-
   analogWriteResolution(10);
-  analogWriteFrequency(pinMAGNETPWM0, 46875); // some of these are redundant, since multiple pins are on the same timer
-  // magic number based on keeping frequency above 20khz for audible reasons and the filter of the inductor is around 20khz,
-  // plus that is the number that maps perfectly to 10 bit resolution at 96Mhz processor speed
-  analogWriteFrequency(pinMAGNETPWM1, 46875);
-  analogWriteFrequency(pinMAGNETPWM2, 46875);
-  analogWriteFrequency(pinMAGNETPWM3, 46875);
-  analogWriteFrequency(pinMAGNETPWM4, 46875);
-  analogWriteFrequency(pinMAGNETPWM5, 46875);
-  analogWriteFrequency(pinMAGNETPWM6, 46875);
-  analogWriteFrequency(pinMAGNETPWM7, 46875);
-}
-
-void setupControlLoops(){
-  myPID_Magnet0.SetSampleTime(sampleTime);
-  myPID_Magnet1.SetSampleTime(sampleTime);
-  myPID_Magnet2.SetSampleTime(sampleTime);
-  myPID_Magnet3.SetSampleTime(sampleTime);
-  myPID_Magnet4.SetSampleTime(sampleTime);
-  myPID_Magnet5.SetSampleTime(sampleTime);
-  myPID_Magnet6.SetSampleTime(sampleTime); 
-  myPID_Magnet7.SetSampleTime(sampleTime);
-
-  myPID_Magnet0.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet1.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet2.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet3.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet4.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet5.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet6.SetOutputLimits(-maxPower, maxPower); 
-  myPID_Magnet7.SetOutputLimits(-maxPower, maxPower); 
-  
-  myPID_Magnet0.SetMode(AUTOMATIC); // for now we want to play with a single magnet
-  myPID_Magnet1.SetMode(AUTOMATIC);
-  //myPID_Magnet2.SetMode(AUTOMATIC);
-  myPID_Magnet3.SetMode(AUTOMATIC);
-  //myPID_Magnet4.SetMode(AUTOMATIC);
-  //myPID_Magnet5.SetMode(AUTOMATIC);
-  //myPID_Magnet6.SetMode(AUTOMATIC);
-  //myPID_Magnet7.SetMode(AUTOMATIC);
-}
-
-void updateControlLoops(){
-
-  // check if the control loops should be on or off!! ----------------------------------------------------------------------------------------------------------
-  
-  myPID_Magnet0.Compute(); // this may not update every time through as the sensors are scanned faster than
-  // the control loops update, and depending on delays, etc. they may not all update in the same
-  // callback, causeing asynchronous updates. This shouldn't hurt anything though. The largest downside
-  // is they are all assuming a fixed interval since their last call (of 3ms), when in reality it is within
-  // the nearest time of the sample speed (so +- 700us)
-  myPID_Magnet1.Compute();
-  myPID_Magnet2.Compute();
-  myPID_Magnet3.Compute();
-  myPID_Magnet4.Compute();
-  myPID_Magnet5.Compute();
-  myPID_Magnet6.Compute();
-  myPID_Magnet7.Compute();
-
-  // handling case where some magnets are off
-  if (myPID_Magnet0.GetMode() == MANUAL){PID_OutputMagnetCommand[0] = 0;}
-  if (myPID_Magnet1.GetMode() == MANUAL){PID_OutputMagnetCommand[1] = 0;}
-  if (myPID_Magnet2.GetMode() == MANUAL){PID_OutputMagnetCommand[2] = 0;}
-  if (myPID_Magnet3.GetMode() == MANUAL){PID_OutputMagnetCommand[3] = 0;}
-  if (myPID_Magnet4.GetMode() == MANUAL){PID_OutputMagnetCommand[4] = 0;}
-  if (myPID_Magnet5.GetMode() == MANUAL){PID_OutputMagnetCommand[5] = 0;}
-  if (myPID_Magnet6.GetMode() == MANUAL){PID_OutputMagnetCommand[6] = 0;}
-  if (myPID_Magnet7.GetMode() == MANUAL){PID_OutputMagnetCommand[7] = 0;}
-  
-  // update visual elements
-  // weak averaging function
   for (int i = 0; i < 8; i ++){
-    intPowerNow[i] = (int)PID_OutputMagnetCommand[i];
-    //intPowerAvg[i] = ((intPowerAvg[i]*3)/4)+ (intPowerNow[i]/4);
-    intPowerAvg[i] = intPowerNow[i]; // no averaging
+    pinMode(MAGNETPWMPINS[i], OUTPUT);
+    pinMode(MAGNETDIRECTIONPINS[i], OUTPUT);
+    digitalWrite(MAGNETPWMPINS[i], HIGH);
+    digitalWrite(MAGNETDIRECTIONPINS[i], LOW);
+    analogWriteFrequency(MAGNETPWMPINS[i], 46875); // some of these are redundant, since multiple pins are on the same timer
+    // magic number based on keeping frequency above 20khz for audible reasons and the filter of the inductor is around 20khz,
+    // plus that is the number that maps perfectly to 10 bit resolution at 96Mhz processor speed
+    magnetActive[i] = false;
+
+    digitalWrite(pinMAGNETENABLE, HIGH);
   }
 }
 
-void adjustMagnetPowerLevels(){
-  if (intPowerNow[0]<0){digitalWrite(pinMAGNETDIRECTION0, MAGNET0NORTH);}else{digitalWrite(pinMAGNETDIRECTION0, !MAGNET0NORTH);}
-  analogWrite(pinMAGNETPWM0, maxResolution - abs(intPowerNow[0]));
-  if (intPowerNow[1]<0){digitalWrite(pinMAGNETDIRECTION1, MAGNET1NORTH);}else{digitalWrite(pinMAGNETDIRECTION1, !MAGNET1NORTH);}
-  analogWrite(pinMAGNETPWM1, maxResolution - abs(intPowerNow[1]));
-  if (intPowerNow[2]<0){digitalWrite(pinMAGNETDIRECTION2, MAGNET2NORTH);}else{digitalWrite(pinMAGNETDIRECTION2, !MAGNET2NORTH);}
-  analogWrite(pinMAGNETPWM2, maxResolution - abs(intPowerNow[2]));
-  if (intPowerNow[3]<0){digitalWrite(pinMAGNETDIRECTION3, MAGNET3NORTH);}else{digitalWrite(pinMAGNETDIRECTION3, !MAGNET3NORTH);}
-  analogWrite(pinMAGNETPWM3, maxResolution - abs(intPowerNow[3]));
-  if (intPowerNow[4]<0){digitalWrite(pinMAGNETDIRECTION4, MAGNET4NORTH);}else{digitalWrite(pinMAGNETDIRECTION4, !MAGNET4NORTH);}
-  analogWrite(pinMAGNETPWM4, maxResolution - abs(intPowerNow[4]));
-  if (intPowerNow[5]<0){digitalWrite(pinMAGNETDIRECTION5, MAGNET5NORTH);}else{digitalWrite(pinMAGNETDIRECTION5, !MAGNET5NORTH);}
-  analogWrite(pinMAGNETPWM5, maxResolution - abs(intPowerNow[5]));
-  if (intPowerNow[6]<0){digitalWrite(pinMAGNETDIRECTION6, MAGNET6NORTH);}else{digitalWrite(pinMAGNETDIRECTION6, !MAGNET6NORTH);}
-  analogWrite(pinMAGNETPWM6, maxResolution - abs(intPowerNow[6]));
-  if (intPowerNow[7]<0){digitalWrite(pinMAGNETDIRECTION7, MAGNET7NORTH);}else{digitalWrite(pinMAGNETDIRECTION7, !MAGNET7NORTH);}
-  analogWrite(pinMAGNETPWM7, maxResolution - abs(intPowerNow[7]));
-  /*analogWrite(pinMAGNETPWM0, intPowerNow[0]);
-  analogWrite(pinMAGNETPWM1, intPowerNow[1]);
-  analogWrite(pinMAGNETPWM2, intPowerNow[2]);
-  analogWrite(pinMAGNETPWM3, intPowerNow[3]);
-  analogWrite(pinMAGNETPWM4, intPowerNow[4]);
-  analogWrite(pinMAGNETPWM5, intPowerNow[5]);
-  analogWrite(pinMAGNETPWM6, intPowerNow[6]);
-  analogWrite(pinMAGNETPWM7, intPowerNow[7]);*/
+void setupControlLoops(){
+  // not much to do anymore :)
 }
+
+long targetCurrent_uA_atHeight0 = 0;
+long targetCurrent_uA_atHeight1 = 0;
+long savej0 = 0; long savej1 = 1;
+
+void computeTargetCurrent(){
+  // *****************************************************************************************************************************************************
+  // 2 dimensional lookup table to get from position and target force to target current
+  //intMaxHeight_UI
+  //targetForce_uN
+  intMaxHeight_uI = 225000;
+  targetForce_uN = 500000;
+  //targetCurrent_uA
+  //Serial.println("NewSample");
+  long y0,y1,x0,x1;
+  for (int i = 0; i < CTHeightForceCurrentLengthDimHeight-1; i ++){
+    // the long casts may be not useful?
+    if (intMaxHeight_uI >= (long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][0][0]) && intMaxHeight_uI < (long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][0][0])){
+      for (int j = 0; j < CTHeightForceCurrentLengthDimForce-1; j ++){
+        if (targetForce_uN >= (long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][j][1]) && targetForce_uN < (long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][j+1][1])){
+          y0 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][j][2]);  //lower bound
+          y1 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][j+1][2]); //upper bound
+          x0 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][j][1]);
+          x1 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][j+1][1]);
+          //Serial.print("DEBUG: ");Serial.print("x0 (mN): "); Serial.print(x0/1000);Serial.print(", x1 (mN): "); Serial.print(x1/1000);
+          //Serial.print(", y0 (mA): "); Serial.print(y0/1000);Serial.print(", y1 (mA): "); Serial.print(y1/1000);
+          //Serial.println();
+          targetCurrent_uA_atHeight0 = y0 + ((((y1 - y0)/1000) * ((targetForce_uN - x0))) / (x1 - x0))*1000; // counting on current y1 and y0 being round numbers that
+          // can be decimated to prevent overflow. max input approx. 2N. may want to find a better way to do this in fixed point.
+          //Serial.print("DEBUG: ((((y1 - y0)/1000) * ((targetForce_uN - x0))) / (x1 - x0))*1000: "); Serial.print(((((y1 - y0)/1000) * ((targetForce_uN - x0))) / (x1 - x0))*1000);Serial.println(); 
+          //Serial.print("DEBUG: OUTPUT (mA): "); Serial.print(targetCurrent_uA_atHeight0/1000);Serial.println(); 
+          savej0 = j;
+        }
+      }
+      for (int j = 0; j < CTHeightForceCurrentLengthDimForce-1; j ++){
+        if (targetForce_uN >= (long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][j][1]) && targetForce_uN < (long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][j+1][1])){
+          y0 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][j][2]);  //lower bound
+          y1 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][j+1][2]); //upper bound
+          x0 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][j][1]);
+          x1 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][j+1][1]);
+          targetCurrent_uA_atHeight1 = y0 + ((((y1 - y0)/1000) * ((targetForce_uN - x0))) / (x1 - x0))*1000;
+          savej1 = j;
+        }
+      }      
+
+      y0 = (long) targetCurrent_uA_atHeight0;  //lower bound
+      y1 = (long) targetCurrent_uA_atHeight1; //upper bound
+      x0 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][0][0]);
+      x1 = (long) pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][0][0]);
+      targetCurrent_uA = y0 + ((((y1 - y0)/1000) * ((intMaxHeight_uI - x0))) / (x1 - x0))*1000;
+
+      /*
+      Serial.print("DEBUG: ");Serial.print("x0 (mil): "); Serial.print(x0/1000);Serial.print(", x1 (mil): "); Serial.print(x1/1000);
+      Serial.print(", y0 (mA): "); Serial.print(y0/1000);Serial.print(", y1 (mA): "); Serial.print(y1/1000);
+      Serial.println();
+          
+      Serial.print("Height (mil): "); Serial.print(intMaxHeight_uI/1000);Serial.print(", Requested Force (mN): "); Serial.print(targetForce_uN/1000);Serial.println();
+      Serial.print("i(H,mil): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][0][0])/1000);Serial.print(" at i: ");Serial.print(i);Serial.println();
+      Serial.print("i+1(H,mil): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][0][0])/1000); Serial.println();
+      Serial.print("j for i(F,mN): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][savej0][1])/1000);Serial.print(" at j: ");Serial.print(savej0);
+      Serial.print(", Current needed at this force (mA): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][savej0][2])/1000);Serial.println();
+      Serial.print("j+1 for i(F,mN): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][savej0+1][1])/1000);
+      Serial.print(", Current needed at this force (mA): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i][savej0+1][2])/1000);Serial.println();
+      Serial.print("j for i+1(F,mN): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][savej1][1])/1000);Serial.print(" at j: ");Serial.print(savej1);
+      Serial.print(", Current needed at this force (mA): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][savej1][2])/1000);Serial.println();
+      Serial.print("j+1 for i+1(F,mN): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][savej1+1][1])/1000);
+      Serial.print(", Current needed at this force (mA): "); Serial.print((long)pgm_read_dword(&CTHeightForceCurrent_uIuNuA[i+1][savej1+1][2])/1000);Serial.println();
+      Serial.print("Current interpolation at Height 0 (mA): "); Serial.print(targetCurrent_uA_atHeight0/1000);Serial.println();
+      Serial.print("Force interpolation at Height 1 (mA): "); Serial.print(targetCurrent_uA_atHeight1/1000);Serial.println();
+      Serial.print("Final Current interpolation (mA): "); Serial.print(targetCurrent_uA/1000);Serial.println();
+      Serial.println();
+      */
+    }
+  }
+}
+
+
+long inputVoltage_uV = 12000000;
+long coilResistance_uOhms = 3700000;
+void adjustMagnetPowerLevels(){
+  // *****************************************************************************************************************************************************
+  // somewhere we need to assess magnetactive as well
+    // *****************************************************************************************************************************************************
+  //maxResolution = 1024;
+  for (int i = 0; i < 8; i ++){
+    if (magnetActive[i] == true){ // magnet is on, because it is close to the train position
+      digitalWrite(MAGNETDIRECTIONPINS[i], targetPolarity); // does true false turn into high low correctly? Is this backwards?
+      analogWrite(MAGNETPWMPINS[i], targetPWM); // is this max resolution - targetpwm, or does the math that evaluates targetpwm sort that out?
+    }
+    else{ // magnet is off because it is not close to the train position
+      digitalWrite(MAGNETPWMPINS[i], 0); 
+    }
+  }
+}
+
+void updateControlLoops(){
+  error_uI = setpoint_uI - intMaxHeight_uI;
+  dterm = intMaxHeight_uI - lastMaxHeight;
+  ddterm = dterm - lastDterm;
+  lastDterm = dterm; // these happen whether the loop was on or off so there isn't a harsh jump when the loop transitions
+  lastMaxHeight = intMaxHeight_uI; // from on to off.
+  
+  //if (intMaxHeight_uI < 50000 && intMaxHeight_uI > 300000) { // max usable range, will force control loop off when magnet is not present
+  if(true){
+    targetForce_uN = kk + (kpT * error_uI)/kpB + (kdT*dterm)/kdB + (kddT*ddterm)/kddB; // here's where the magic happens!
+    if (targetForce_uN > maxForce_uN){targetForce_uN = maxForce_uN;}
+    if (targetForce_uN < minForce_uN){targetForce_uN = minForce_uN;}
+    computeTargetCurrent();
+  } else{ // control loop is off, set all current to 0.
+    targetCurrent_uA = 0;
+  }
+
+  targetPWM = (((abs(targetCurrent_uA))*coilResistance_uOhms)*maxResolution)/inputVoltage_uV;
+  if (targetCurrent_uA > 0) {targetPolarity = true;} // attraction
+  else {targetPolarity = false;} // repulsion
+  if (targetPWM > maxPower){targetPWM = maxPower;}
+  
+  //adjustMagnetPowerLevels();
+  intBarGraphCurrents[loopCounter] = targetCurrent_uA; // data logging
+}
+
+
 
 #endif
