@@ -47,6 +47,7 @@ long maxSensorDataIndex = 0;
 long maxSensorValueLocation = 0;
 long minValidSensor = 0;
 long maxValidSensor = 0;
+long plotCurrent_mA = 0;
 
 // recording variables for display and data tracking (not striktly necessary if we run out of ram)
 long intBarGraphCurrents[100];
@@ -87,19 +88,22 @@ long maxResolution = 1024;
 long maxPower = 512; // 1024 max, based on 10 bit PWM. Shouldn't exceed 512 until we have some thermal protection like
 // joule tracking.
 
-long setpoint_uI = 200000;
+long setpoint_uI = 175000;
 long error_uI = 0;
-long kk = 50000; // uN, based on mass and gravity
-long kpT = 1; // kpT/kpB forms kp, in integer math. Units of uN per uI of error (or Newtons per Inch of error)
+long kk = 500000; // uN, based on mass and gravity, tuned for 50 grams
+long kpT = 15; // kpT/kpB forms kp, in integer math. Units of uN per uI of error (or Newtons per Inch of error)
 long kpB = 1;
-long kdT = 0; // Units of uN per (uI/timebase), so for 1khz this is , for 10khz it is 
+long kdT = 150; // Units of uN per (uI/timebase), so for 1khz this is , for 10khz it is 
 long kdB = 1;
-long kddT = 0;
+long kddT = 40; 
 long kddB = 1;
 long dterm = 0;
 long lastDterm = 0;
 long ddterm = 0;
 long lastMaxHeight = 0;
+
+//15,120,30 achieves momentary levitation and is more stable than smaller values of kd and kdd
+//15,200,60 has too much high frequency noise
 
 boolean magnetActive[8];
 long targetForce_uN = 0;

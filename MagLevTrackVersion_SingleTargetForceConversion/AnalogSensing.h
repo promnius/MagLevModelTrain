@@ -142,16 +142,17 @@ void ExtractUsefulData(){
   // compute display values
   for (int barGraphCounter = 0; barGraphCounter < 8; barGraphCounter ++){ // 8 bar graphs, this could be parameterized someday
     for (int i = 0; i < 5; i ++){ // 5 values per bar graph
-      //intSensorDataHeightBarGraph_uT[i] = abs(intSensorData_uT[(5*barGraphCounter) + i]);
-      intSensorDataHeightBarGraph_uT[i] = abs(intSensorData_uT[(barGraphCounter)]);
+      intSensorDataHeightBarGraph_uT[i] = abs(intSensorData_uT[(5*barGraphCounter) + i]);
+      //intSensorDataHeightBarGraph_uT[i] = abs(intSensorData_uT[(barGraphCounter)]); // for finer resolution viewing of only part scale
     }
     intBarGraphHeights[barGraphCounter][loopCounter] = intSensorDataHeightBarGraph_uT[getIndexOfMaximumValue(intSensorDataHeightBarGraph_uT, 5)];
   }
 
   for (int i = 0; i < 40; i ++){
     intSensorData_uT_Avg[i][loopCounter] = intSensorData_uT[i];
-    if ((intSensorData_uT_Max_Avg[i] < getAverageOfArray(intSensorData_uT_Avg[i],100)) && (averagesValid == true)){intSensorData_uT_Max_Avg[i] = getAverageOfArray(intSensorData_uT_Avg[i],100);}
-    if ((intSensorData_uT_Min_Avg[i] > getAverageOfArray(intSensorData_uT_Avg[i],100)) && (averagesValid == true)){intSensorData_uT_Min_Avg[i] = getAverageOfArray(intSensorData_uT_Avg[i],100);}
+    // these two lines take 500us thanks to the intensive math. Only useful during calibration phase.
+    //if ((intSensorData_uT_Max_Avg[i] < getAverageOfArray(intSensorData_uT_Avg[i],100)) && (averagesValid == true)){intSensorData_uT_Max_Avg[i] = getAverageOfArray(intSensorData_uT_Avg[i],100);}
+    //if ((intSensorData_uT_Min_Avg[i] > getAverageOfArray(intSensorData_uT_Avg[i],100)) && (averagesValid == true)){intSensorData_uT_Min_Avg[i] = getAverageOfArray(intSensorData_uT_Avg[i],100);}
   }
 
     

@@ -157,10 +157,11 @@ void plotAllGraphs(){
   }
   
   for (int i = 0; i < 8; i ++){
-    //if (magnetActive[i]){
-    if (true){
-      if (targetPolarity == false){updateBarGraph(targetPWM, 0, maxPower, 16+32*i, 16, 0, 1, 255);}  
-      else{updateBarGraph(targetPWM, 0, maxPower, 16+32*i, 16, 2, 1, 255);}
+    if (magnetActive[i]){
+    //if (true){
+      plotCurrent_mA = getAverageOfArray(intBarGraphCurrents,100)/1000;
+      if (plotCurrent_mA > 0){updateBarGraph(plotCurrent_mA, 0, 1500, 16+32*i, 16, 0, 1, 255);}  
+      else{updateBarGraph(-plotCurrent_mA, 0, 1500, 16+32*i, 16, 2, 1, 255);}
     }
   }
   // power data --------------------------------------^----- this is the color channel.

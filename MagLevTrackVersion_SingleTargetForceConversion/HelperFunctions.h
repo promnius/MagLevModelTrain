@@ -5,7 +5,7 @@
 #include "Arduino.h"
 #include "GlobalVariables.h"
 
-int getAverageOfArray(long* myArray, int mySize){
+int getAverageOfArray(long* myArray, int mySize){ // CAREFUL OF OVERFLOW!!
   lngSum = 0;
   for (int i=1; i<mySize; i++){
     lngSum = lngSum + myArray[i];

@@ -1,16 +1,16 @@
 
 // ToDo:
-// remove if true statements/ artificial height samples
+// --remove if true statements/ artificial height samples
 // evaluate magnetActive[]
 // --finish 2D LUT.
 // --verify 2D LUT is working.
-// test timing
+// --test timing
 // double check magnet power polarity
 // tune kd and kdd
 // test levitation
 // evaluate if the requested force is available or not, and update the final bar graph showing requested torque vs. real torque.
-// why leds.show() is blocking
-// can sensor math go faster?
+// --why leds.show() is blocking
+// --can sensor math go faster?
 
 
 
@@ -24,6 +24,16 @@
 #include "PowerAndControls.h"
 
 
+IntervalTimer myTimer;
+
+void controlLoop(){
+  SampleTheSensors(); // this is currently a blocking function!! takes about 250uS
+  ExtractUsefulData(); // looking for vertical and horizontal positions, in real units. Takes about 50uS, with averaging disabled.
+  updateControlLoops(); // calculates new current values and applies them. takes about 10uS
+  adjustMagnetPowerLevels();
+  loopCounter +=1;
+  if (loopCounter > 99){loopCounter = 0; averagesValid = true;}
+}
 
 // ***************************************************************************************************************************************************
 
@@ -37,6 +47,7 @@ void setup() {
   setupControlLoops(); // initialize control loops
   leds.begin();
   lngLEDUpdateTime = millis();
+  /*
   Serial.println(CTHeightForceCurrent_uIuNuA[0][0][1]);
   Serial.println(CTHeightForceCurrent_uIuNuA[0][1][1]);
   Serial.println(CTHeightForceCurrent_uIuNuA[8][0][1]);
@@ -47,6 +58,7 @@ void setup() {
   Serial.println(CTHeightForceCurrent_uIuNuA[8][6][1]);
   Serial.println();
   delay(4000);
+  */
   /*
   targetPWM = 500;
   magnetActive[0] = true;
@@ -55,6 +67,8 @@ void setup() {
   analogWrite(MAGNETPWMPINS[0], maxResolution - targetPWM);
   analogWrite(MAGNETPWMPINS[1], maxResolution - targetPWM);
   */
+  myTimer.priority(200); // lower than most timers so micros and millis still work.
+  myTimer.begin(controlLoop, 400); // 2.5khz
 }
 
 // ***************************************************************************************************************************************************
@@ -101,8 +115,12 @@ void printDataControlLoop(){
 
 // ***************************************************************************************************************************************************
 
+
+
+
 void loop() {
   // sample all analog inputs
+  /*
   lngScanStartTime = micros();
   SampleTheSensors(); // this is currently a blocking function!! takes about 750us??
   lngScanEndTime = micros();
@@ -115,18 +133,19 @@ void loop() {
 
   loopCounter +=1;
   if (loopCounter > 99){loopCounter = 0; averagesValid = true;}
+  */
   
-  if (millis() - lngLEDUpdateTime > 200){
+  if (millis() - lngLEDUpdateTime > 50){
     //updateControlLoops(); // only in here so we can control run speed
     //printDataSensors();
-    //printDataControlLoop();
+    printDataControlLoop();
     plotAllGraphs();
     lngLEDUpdatesEndTime0 = micros();
     correctForGamma();
     lngLEDUpdatesEndTime1 = micros();
     leds.show();
     lngLEDUpdatesEndTime2 = micros();
-    printDataTiming();
+    //printDataTiming();
     lngLEDUpdateTime = millis(); // the two different LED timers are confusing, please rename!
   }
   //delay(1000);

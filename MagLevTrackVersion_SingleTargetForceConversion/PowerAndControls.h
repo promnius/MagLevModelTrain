@@ -38,8 +38,8 @@ void computeTargetCurrent(){
   // 2 dimensional lookup table to get from position and target force to target current
   //intMaxHeight_UI
   //targetForce_uN
-  intMaxHeight_uI = 225000;
-  targetForce_uN = 500000;
+  //intMaxHeight_uI = 225000; // for testing control loop math.
+  //targetForce_uN = 500000;
   //targetCurrent_uA
   //Serial.println("NewSample");
   long y0,y1,x0,x1;
@@ -111,41 +111,54 @@ void adjustMagnetPowerLevels(){
   // *****************************************************************************************************************************************************
   // somewhere we need to assess magnetactive as well
     // *****************************************************************************************************************************************************
+  for (int i = 0; i < 8; i ++){
+    if (((i*10)+5 > maxSensorValueLocation-18)&&((i*10)+5 < maxSensorValueLocation+18)){
+      magnetActive[i]=true;
+      //Serial.println(i);
+    } else{
+      magnetActive[i]=false;
+    }
+  }
   //maxResolution = 1024;
   for (int i = 0; i < 8; i ++){
+    //if (false){ // use this to disable actual magnet output while leaving the rest of the code untouched.
     if (magnetActive[i] == true){ // magnet is on, because it is close to the train position
       digitalWrite(MAGNETDIRECTIONPINS[i], targetPolarity); // does true false turn into high low correctly? Is this backwards?
-      analogWrite(MAGNETPWMPINS[i], targetPWM); // is this max resolution - targetpwm, or does the math that evaluates targetpwm sort that out?
+      analogWrite(MAGNETPWMPINS[i], maxResolution - targetPWM); // is this max resolution - targetpwm, or does the math that evaluates targetpwm sort that out?
     }
     else{ // magnet is off because it is not close to the train position
-      digitalWrite(MAGNETPWMPINS[i], 0); 
+      digitalWrite(MAGNETPWMPINS[i], HIGH); 
     }
   }
 }
-
+long targetOpenLoopVoltage = 0;
 void updateControlLoops(){
   error_uI = setpoint_uI - intMaxHeight_uI;
   dterm = intMaxHeight_uI - lastMaxHeight;
   ddterm = dterm - lastDterm;
   lastDterm = dterm; // these happen whether the loop was on or off so there isn't a harsh jump when the loop transitions
   lastMaxHeight = intMaxHeight_uI; // from on to off.
-  
-  //if (intMaxHeight_uI < 50000 && intMaxHeight_uI > 300000) { // max usable range, will force control loop off when magnet is not present
-  if(true){
-    targetForce_uN = kk + (kpT * error_uI)/kpB + (kdT*dterm)/kdB + (kddT*ddterm)/kddB; // here's where the magic happens!
+  //Serial.println(intMaxHeight_uI/1000);
+  if (intMaxHeight_uI > 50000 && intMaxHeight_uI < 300000) { // max usable range, will force control loop off when magnet is not present
+  //if(true){ // for testing control loop math
+    targetForce_uN = kk - (kpT * error_uI)/kpB + (kdT*dterm)/kdB + (kddT*ddterm)/kddB; // here's where the magic happens!
     if (targetForce_uN > maxForce_uN){targetForce_uN = maxForce_uN;}
     if (targetForce_uN < minForce_uN){targetForce_uN = minForce_uN;}
     computeTargetCurrent();
   } else{ // control loop is off, set all current to 0.
     targetCurrent_uA = 0;
+    //Serial.println('x');
   }
 
-  targetPWM = (((abs(targetCurrent_uA))*coilResistance_uOhms)*maxResolution)/inputVoltage_uV;
-  if (targetCurrent_uA > 0) {targetPolarity = true;} // attraction
-  else {targetPolarity = false;} // repulsion
+  targetOpenLoopVoltage = ((abs(targetCurrent_uA))/1000)*(coilResistance_uOhms/1000)/1000;
+  //Serial.println(intermediateMath);
+  targetPWM = (targetOpenLoopVoltage*maxResolution)/(inputVoltage_uV/1000); // careful of overflow!!
+  //Serial.println(targetPWM);
+  if (targetCurrent_uA > 0) {targetPolarity = false;} // attraction
+  else {targetPolarity = true;} // repulsion
   if (targetPWM > maxPower){targetPWM = maxPower;}
   
-  //adjustMagnetPowerLevels();
+  //adjustMagnetPowerLevels(); // not sure this belongs here.
   intBarGraphCurrents[loopCounter] = targetCurrent_uA; // data logging
 }
 
