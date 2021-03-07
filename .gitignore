@@ -1,6 +1,6 @@
-MachineLearningTesting/results/*
-!MachineLearningTesting/results/*.txt
+MachineLearningTesting/results/dqn/*
 !MachineLearningTesting/results/dqn/*.txt
+MachineLearningTesting/results/td3/*
 !MachineLearningTesting/results/td3/*.txt
 MachineLearningTesting/TeensyModels/*
 !MachineLearningTesting/TeensyModels/placeholder.txt
