@@ -73,16 +73,17 @@ class replayBuffer():
 def build_dqn(n_actions, lr, input_dims,layerCount,layerUnits, usePruning):
 	# things to play with: dropout, l2 normalization, model structure (try a LSTM?)
 	model= keras.Sequential()
-	#model.add(keras.layers.Dense(layerUnits, activation = 'relu', input_dim=np.squeeze(input_dims)))
-	#for j in range(layerCount-1):
-	#	model.add(keras.layers.Dense(layerUnits, activation = 'relu'))
-	model.add(keras.layers.Dense(128, activation = 'relu', input_dim=np.squeeze(input_dims)))
-	model.add(keras.layers.Dense(128, activation = 'relu'))
-	model.add(keras.layers.Dense(128, activation = 'relu'))
-	model.add(keras.layers.Dense(64, activation = 'relu'))
-	model.add(keras.layers.Dense(64, activation = 'relu'))
-	model.add(keras.layers.Dense(32, activation = 'relu'))
-	model.add(keras.layers.Dense(32, activation = 'relu'))
+	model.add(keras.layers.Dense(layerUnits, activation = 'relu', input_dim=np.squeeze(input_dims)))
+	for j in range(layerCount-1):
+		model.add(keras.layers.Dense(layerUnits, activation = 'relu'))
+	
+	#model.add(keras.layers.Dense(128, activation = 'relu', input_dim=np.squeeze(input_dims)))
+	#model.add(keras.layers.Dense(128, activation = 'relu'))
+	#model.add(keras.layers.Dense(128, activation = 'relu'))
+	#model.add(keras.layers.Dense(64, activation = 'relu'))
+	#model.add(keras.layers.Dense(64, activation = 'relu'))
+	#model.add(keras.layers.Dense(32, activation = 'relu'))
+	#model.add(keras.layers.Dense(32, activation = 'relu'))
 
 	model.add(keras.layers.Dense(n_actions, activation = None)) # number of available actions
 	model.compile(optimizer=Adam(learning_rate=lr), loss='mean_squared_error')

@@ -1,2 +1,5 @@
-MachineLearningTesting/results/*.h5
-MachineLearningTesting/results/*.png
+MachineLearningTesting/results/*
+!MachineLearningTesting/results/dqn/placeholder.txt
+!MachineLearningTesting/results/td3/placeholder.txt
+MachineLearningTesting/TeensyModels/*
+!MachineLearningTesting/TeensyModels/placeholder.txt

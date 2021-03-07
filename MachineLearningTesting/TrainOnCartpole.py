@@ -19,6 +19,7 @@ def TrainOnCartPole(numGames=500, isDueling = False,isDual = False,isPER = False
 	gameName = 'CartPole-v1'
 	env=gym.make(gameName)
 	trainCounter = 0
+	trainingSession = 0
 
 	action_dim = env.action_space.n
 	state_dim = (np.squeeze(env.observation_space.shape) + 1,)
@@ -83,11 +84,13 @@ def TrainOnCartPole(numGames=500, isDueling = False,isDual = False,isPER = False
 			customScore += custom_r
 
 			# Train DDQN and transfer weights to target network
-			#agent.learn(numLearns=learnInterval)
-			if agent.memory.mem_counter - learnInterval > trainCounter:
+			if learnInterval == 1:
+				agent.learn(numLearns=learnInterval)
+			elif agent.memory.mem_counter - learnInterval > trainCounter:
+				trainingSession += 1
 				trainCounter = agent.memory.mem_counter
-				print("Learning for " + str(learnInterval) + " batches")
-				for thisIsNotADuplicateVariableThatWillBreakTheRestOfTheCode in range(learnInterval):
+				print("Learning for " + str(learnInterval) + " batches, this is training session #" + str(trainingSession))
+				for thisIsNotADuplicateVariableThatWillBreakTheRestOfTheCode in range(int(learnInterval)):
 					agent.learn()
 				#print("Learning done")
 
@@ -120,7 +123,8 @@ def updateTargetPosition(targetPosition, steps):
 			return 1
 		return(1-2*random.random())
 	"""
-	#return(math.sin(steps/100))
+	
+	return(math.sin(steps/100))
 	return(targetPosition)
 	#return targetPosition
 	#targetPosition=math.sin(steps/60.0)/2
@@ -179,7 +183,7 @@ def visualizeCartPoleModel(filename, numGames=1, complexModel=False):
 			score += r
 			customReward = getCustomReward(new_state, targetPosition)
 			customScore += customReward
-			old_state=new_state
+			old_state=new_state 
 			positions.append(new_state[0])
 			poleAngles.append(10*new_state[2]) # X10 just puts it on a good scale to plot next to position.
 			targetPositions.append(targetPosition)
@@ -210,14 +214,29 @@ if __name__ == '__main__':
 	# benchmarks: the simple model is about 2x faster, since the complex one implements a DDQN with T = 1 to emulate a DQN
 	# the simple one takes all the same arguements as the advanced one for compatibility, but ignores a bunch of them, so for exploring
 	# all the features use the slow option (who wants a basic DQN anyways?)
-	numGames=2000
-	filename=('run103' + "_numGames" + str(numGames))
-	TrainOnCartPole(numGames=numGames, isDueling = False,isDual = False,isPER = False,lr = .0001, gamma = 0.95, epsilon = 1, 
-			epsilon_decay = 0.99, tau = .05, batchSize = 256,filename=filename, complexModel=False, learnInterval=1000, layerCount=4,layerUnits=16, usePruning=False)
-
+	numGames=1000
+	filename=('run1001' + "_numGames" + str(numGames))
+	#TrainOnCartPole(numGames=numGames, isDueling = False,isDual = False,isPER = False,lr = .0001, gamma = 0.95, epsilon = 1, 
+	#		epsilon_decay = 0.99, tau = .05, batchSize = 2048,filename=filename, complexModel=False, learnInterval=1000, layerCount=10,layerUnits=32, usePruning=False)
 
 	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run101_numGames1000_score486.8')
 	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run100_numGames800_score500.0')
 
 	# AWESOME TRAINED MODEL CAN DO 0 error position tracking and sine wave tracking up to sin(steps/100). Complex model though.
-	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run102_numGames1000_score499.5')
+	# Note the actual model is 128/128/128/64/64/32/32 or something like that.
+	visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run102_numGames1000_score499.5')
+
+	# same model trained with intermittent training, not as successful
+	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1000_bs256_g0.95_e1_t0.05_network4x16_run103_numGames2000_score491.04')
+
+	# Another good model, got fully trained on position tracking, but custom reward took a lot longer to optimize
+	# CANNOT do sine wave tracking, actually drops it
+	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network6x64_run205_numGames800_score500.0')
+
+	# another outstanding model, similar performance to #1. much simpler network though (deeper)
+	# CAN DO CRAPPY SINE wave tracking for 2000 steps, but overshoot and phase lag are increasing. Seems unlikely that it would remain stable?
+	# some runs don't seem so bad, maybe with a bit more training?
+	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network10x32_run205_numGames800_score500.0')
+
+	# best model trained with intermittent training so far, still not perfect
+	visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1000_bs256_g0.95_e1_t0.05_network10x32_run1000_numGames1000_score497.28')
