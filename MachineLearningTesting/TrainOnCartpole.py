@@ -55,6 +55,7 @@ def TrainOnCartPole(numGames=500, isDueling = False,isDual = False,isPER = False
 			targetPosition = updateTargetPosition(targetPosition,steps)
 			# Actor picks an action (following the policy)
 			a = agent.chooseAction(old_state)
+			print(a)
 			# Retrieve new state, reward, and whether the state is terminal
 			# GAME HOUSEKEEPING
 			new_state, r, done, _ = env.step(a)
@@ -214,17 +215,17 @@ if __name__ == '__main__':
 	# benchmarks: the simple model is about 2x faster, since the complex one implements a DDQN with T = 1 to emulate a DQN
 	# the simple one takes all the same arguements as the advanced one for compatibility, but ignores a bunch of them, so for exploring
 	# all the features use the slow option (who wants a basic DQN anyways?)
-	numGames=1000
+	numGames=10
 	filename=('run1001' + "_numGames" + str(numGames))
-	#TrainOnCartPole(numGames=numGames, isDueling = False,isDual = False,isPER = False,lr = .0001, gamma = 0.95, epsilon = 1, 
-	#		epsilon_decay = 0.99, tau = .05, batchSize = 2048,filename=filename, complexModel=False, learnInterval=1000, layerCount=10,layerUnits=32, usePruning=False)
+	TrainOnCartPole(numGames=numGames, isDueling = False,isDual = False,isPER = False,lr = .0001, gamma = 0.95, epsilon = 1, 
+			epsilon_decay = 0.99, tau = .05, batchSize = 2048,filename=filename, complexModel=False, learnInterval=1000, layerCount=10,layerUnits=32, usePruning=False)
 
 	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run101_numGames1000_score486.8')
 	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run100_numGames800_score500.0')
 
 	# AWESOME TRAINED MODEL CAN DO 0 error position tracking and sine wave tracking up to sin(steps/100). Complex model though.
 	# Note the actual model is 128/128/128/64/64/32/32 or something like that.
-	visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run102_numGames1000_score499.5')
+	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1_bs256_g0.95_e1_t0.05_network4x16_run102_numGames1000_score499.5')
 
 	# same model trained with intermittent training, not as successful
 	#visualizeCartPoleModel('results/DQNbasic_lr0.0001_LI1000_bs256_g0.95_e1_t0.05_network4x16_run103_numGames2000_score491.04')

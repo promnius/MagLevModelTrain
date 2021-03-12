@@ -118,7 +118,7 @@ class Agent():
 		self.summary()
 
 	def __init__(self, uniqueID = None, alpha=.001, beta=.001, input_dims=5, tau=.01, game='game',
-			gamma=0.99, update_actor_interval=2, learnInterval = 1,
+			gamma=0.95, update_actor_interval=2, learnInterval = 1,
 			n_actions=2, max_size=1000000, layerSizeList=[128,128], batch_size=128, noise=0.05):
 		if uniqueID != None:
 			self.loadActor(uniqueID)

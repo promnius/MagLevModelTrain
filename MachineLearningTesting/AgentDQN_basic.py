@@ -111,7 +111,7 @@ class AgentDQN_basic():
 		self.lr=lr
 		self.batchSize=batchSize
 		self.epsilonInitial = epsilon
-		self.minEpsilon = .1
+		self.minEpsilon = .3
 		self.usePruning=usePruning
 
 	# for actual deployment on a micro, this is not really needed. This is forward inference (or random),
