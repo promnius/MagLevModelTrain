@@ -5,10 +5,14 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import Dense
 import gym
 import matplotlib.pyplot as plt
 import time
 import math
+from tinymlgen import port
+import pickle
+import shutil
 
 # we are creating our own memory and agent classes rather than using tf agents to facilitate
 # easy swapping between simulated and real environments, where the data would be read off of disk
@@ -70,7 +74,21 @@ class replayBuffer():
 # this only gets run at the VERY beginning of training. After that, training should save the partially trained model
 # to disk and reload as needed, rather than generate new ones, if real world training takes more than one session (it will)
 # because of this, we don't bother to make this fancy. It's hard coded and not an object.
-def build_dqn(n_actions, lr, input_dims,layerCount,layerUnits, usePruning):
+def build_dqn(n_actions, lr, input_dims,layerSizeList):
+	model= keras.Sequential()
+	isFirstLayer = True
+	for unitCount in layerSizeList:
+		if isFirstLayer:
+			isFirstLayer = False
+			layer = Dense(unitCount, input_dim=np.squeeze(input_dims), activation='relu')
+		else:
+			layer = Dense(unitCount, activation='relu')
+		model.add(layer)
+	lastLayer = Dense(n_actions, activation=None)#tanh
+	model.add(lastLayer)
+	#return(model)
+
+	"""
 	# things to play with: dropout, l2 normalization, model structure (try a LSTM?)
 	model= keras.Sequential()
 	model.add(keras.layers.Dense(layerUnits, activation = 'relu', input_dim=np.squeeze(input_dims)))
@@ -86,6 +104,8 @@ def build_dqn(n_actions, lr, input_dims,layerCount,layerUnits, usePruning):
 	#model.add(keras.layers.Dense(32, activation = 'relu'))
 
 	model.add(keras.layers.Dense(n_actions, activation = None)) # number of available actions
+	"""
+
 	model.compile(optimizer=Adam(learning_rate=lr), loss='mean_squared_error')
 	# we use a very small learning rate because it is likely our sample is not well
 	# distributed. We'd rather take many samples and lots of data for this problem
@@ -93,26 +113,111 @@ def build_dqn(n_actions, lr, input_dims,layerCount,layerUnits, usePruning):
 
 # for now, we hardcode a lot of the hyperparameters for transparency.
 class AgentDQN_basic():
-	def __init__(self, state_dim, action_dim, batchSize= 64, lr=.0001, tau=.05, gamma=.95, epsilon=1, eps_dec=.99, learnInterval='STEP', isDual=False, 
-				isDueling=False, isPER=False,filename='model',mem_size=1000000,layerCount=2,layerUnits=64,usePruning=False):
-		self.tau=tau # not used in simple model, just implemented for compatibility
-		self.learnInterval = learnInterval
-		self.epsilon=epsilon
-		self.epsilon_decay = eps_dec
-		self.action_space = [i for i in range(action_dim)] # a simple list [1,2,3,4,...] for num actions, to enable
-			# easy swapping between one-hot, probabilities (values, remember this is DQN not PGN), and an integer for the action space.
-			# we can also use this list for easy selecting of random actions
-		self. gamma = gamma
-		self.filename = filename
-		self.memory = replayBuffer(mem_size, state_dim)
-		self.q_network = build_dqn(action_dim, lr, state_dim,layerCount,layerUnits,usePruning)
-		self.layerCount = layerCount
-		self.layerUnits = layerUnits
-		self.lr=lr
-		self.batchSize=batchSize
-		self.epsilonInitial = epsilon
-		self.minEpsilon = .3
-		self.usePruning=usePruning
+	def loadActor(self, uniqueID):
+		self.uniqueID = uniqueID
+		print('... loading entire actor/ RL state ...')
+		self.getSaveDirectoryFromUniqueID()
+		self.loadStoredData()
+		self.load_models()
+		self.summary()
+
+	def __init__(self, state_dim=5, action_dim=3, batchSize= 64, lr=.0001, tau=.05, gamma=.95, epsilon=1, eps_dec=.99, learnInterval='STEP', isDual=False, 
+				isDueling=False, isPER=False,gameName='mavLevSim',mem_size=1000000,layerSizeList=[64,64,64],usePruning=False, minEpsilon=.3,uniqueID=None):
+		if uniqueID != None:
+			self.loadActor(uniqueID)
+		else:
+			self.tau=tau # not used in simple model, just implemented for compatibility
+			self.learnInterval = learnInterval
+			self.epsilon=epsilon
+			self.epsilon_decay = eps_dec
+			self.action_space = [i for i in range(action_dim)] # a simple list [1,2,3,4,...] for num actions, to enable
+				# easy swapping between one-hot, probabilities (values, remember this is DQN not PGN), and an integer for the action space.
+				# we can also use this list for easy selecting of random actions
+			self. gamma = gamma
+			self.gameName = gameName
+			self.memory = replayBuffer(mem_size, state_dim)
+			self.q_network = build_dqn(action_dim, lr, state_dim,layerSizeList)
+			self.n_actions = action_dim
+			self.input_dims = state_dim
+			self.layerSizeList = layerSizeList
+			self.lr=lr
+			self.batchSize=batchSize
+			self.epsilonInitial = epsilon
+			self.minEpsilon = minEpsilon
+			self.usePruning=usePruning
+			self.scores = []
+			self.timeStepNumLearns = 0
+			self.timeStepNumActionsChoosen = 0
+			self.epsilonHistory = []
+
+			# housekeeping for logging and saving models and progress
+			self.getUniqueID()
+			self.saveDirectory = "results/dqn/"
+			if self.uniqueID < 10: self.saveDirectory += "00"
+			elif self.uniqueID < 100: self.saveDirectory += "0"
+			self.saveDirectory += str(self.uniqueID) + "_" + str(self.gameName) + ("_lr" + str(self.lr) +
+					"_LI" + str(self.learnInterval) + '_bs' + str(self.batchSize) + '_g' +
+					str(self.gamma) + "_network" + self.getNetworkAsString())
+			os.mkdir(self.saveDirectory)
+
+	def wipeMemory(self):
+		memSize = self.memory.mem_size
+		self.memory = replayBuffer(memSize, self.input_dims)
+
+	def summary(self):
+		print('... Information about DQN actor, network, and training progress ...')
+		print('Game Name: ' + str(self.gameName))
+		print('Actor Unique ID: ' + str(self.uniqueID))
+		print('... Hyperparameters ...')
+		print('lr: ' + str(self.lr))
+		print('gamma: ' + str(self.gamma))
+		print('batch size: ' + str(self.batchSize))
+		print('learn interval (externally enforced, only used for naming conventions): ' + str(self.learnInterval))
+		print('input dims: ' + str(self.input_dims))
+		print('action dims: ' + str(self.n_actions))
+		print('... Network Information ...')
+		print('network design: ' + str(self.getNetworkAsString()))
+		print('... Learning Progress ...')
+		print('number of actions decided: ' + str(self.timeStepNumActionsChoosen))
+		print('number of times agent has learned on a batch: ' + str(self.timeStepNumLearns))
+		print('memory filled: ' + str(self.memory.mem_counter) + "/" + str(self.memory.mem_size) + 
+				", " + str(int(100*self.memory.mem_counter/self.memory.mem_size)) + "%")
+		print('number of epochs/ number of recorded game scores: ' + str(len(self.scores)))
+		print('average score of last 100 games: ' + str(self.getAveScore()))
+
+	def getSaveDirectoryFromUniqueID(self):
+		list_subfolders = [f.name for f in os.scandir('results/dqn/') if f.is_dir()]
+		searchForID  =-1
+		for subfolder in list_subfolders:
+			if int(subfolder[0:3]) == self.uniqueID:
+				self.saveDirectory = 'results/dqn/' + str(subfolder)
+				searchForID += 1
+		if searchForID == -1:
+			print("...MAJOR ERROR, SELECTED UNIQUE ID DOES NOT EXIST...")
+		elif searchForID > 0:
+			print("... ERROR WE FOUND MORE THAN 1 DIRECTORY WITH THE UNIQUE ID ...")
+
+	def getUniqueID(self):
+		list_subfolders = [f.name for f in os.scandir('results/dqn/') if f.is_dir()]
+		uniqueIDs = []
+		for subfolder in list_subfolders:
+			if 'placeholder' not in subfolder:
+				uniqueIDs.append(int(subfolder[0:3]))
+		if uniqueIDs == []:
+			self.uniqueID = 0
+		else:
+			self.uniqueID = max(uniqueIDs)+1
+
+	def getNetworkAsString(self):
+		networkString=""
+		isFirstLayer = True
+		for layer in self.layerSizeList:
+			if isFirstLayer:
+				isFirstLayer = False
+			else:
+				networkString += "-"
+			networkString += str(layer)
+		return(networkString)
 
 	# for actual deployment on a micro, this is not really needed. This is forward inference (or random),
 	# and this is the part that needs to be replicated on 
@@ -125,26 +230,37 @@ class AgentDQN_basic():
 			action = np.random.choice(self.action_space)
 		else:
 			stateAsArray = np.array([observation]) # also adds a dimension as the NN expects to see a batch dimension
-			actions = self.q_network.predict(stateAsArray)
+			# MONSTER SPEED DIFFERENCE: with eager execute OFF, predict is 8 seconds for some benchmark, 35 seconds with eager execute ON
+			# with eager execute ON, () is 3 seconds for same benchmark. () won't run with eager execute OFF due to tensor/numpy conversions (I think)
+			#actions = self.q_network.predict(stateAsArray)
+			actions = self.q_network(stateAsArray)
 			action=np.argmax(actions) # since the NN returns scores, we want the best score
+		self.timeStepNumActionsChoosen += 1
 		return(action)
 
-	def learn(self, numLearns=1):
-		if self.memory.mem_counter < self.batchSize: # we'd get strange errors if we tried to train before we had enough entries in 
-			# our memory to fill a batch
-			return
-		sampleStates, sampleNewStates, sampleRewards, sampleActions, sampleTerminations = self.memory.sample_buffer(self.batchSize)
+	def learn(self, numLearns=1, customBatchSize=None):
+		if customBatchSize == None:
+			localBatchSize = self.batchSize
+		else:
+			localBatchSize = customBatchSize
+			if self.memory.mem_counter < localBatchSize: # we'd get strange errors if we tried to train before we had enough entries in 
+				# our memory to fill a batch
+				return
+		self.timeStepNumLearns += 1
+		sampleStates, sampleNewStates, sampleRewards, sampleActions, sampleTerminations = self.memory.sample_buffer(localBatchSize)
 
 		# for each of the states in our sample, how do we want the predictions we make to change? well, for any actions we didn't take,
 		# we want them to stay the same since we don't have any more information. For the action we took, we want the prediction to 
 		# adjust toward the real value.
-		q_predictions = self.q_network.predict(sampleStates)
-		q_next_predictions = self.q_network.predict(sampleNewStates)
+		#q_predictions = self.q_network.predict(sampleStates)
+		#q_next_predictions = self.q_network.predict(sampleNewStates)
+		q_predictions = self.q_network(sampleStates)
+		q_next_predictions = self.q_network(sampleNewStates)
 		# so above are the predictions we would have made in our old state. If we were using a 2-network approach, we'd used the locked
 		# network to generate these, while the active network is free to learn. depending on epsilon and random numbers, we may or may
 		# not have followed our advice and taken the best action based on the above predictions
 		q_target = np.copy(q_predictions)
-		batch_index = np.arange(self.batchSize, dtype=np.int32) # This creates a properly formated array of the indexes of the samples in the batch, ie,
+		batch_index = np.arange(localBatchSize, dtype=np.int32) # This creates a properly formated array of the indexes of the samples in the batch, ie,
 			# [1,2,3,4,...]
 		q_target[batch_index, sampleActions] = sampleRewards + self.gamma*np.max(q_next_predictions, axis=1)*sampleTerminations
 		# this is sort of clunky, sort of brilliant, and is at the heart of how this algorithem can work without summing up future rewards or being dependant on the policy.
@@ -172,6 +288,7 @@ class AgentDQN_basic():
 	def saveMemory(self, state, action, reward, done, new_state):
 		self.memory.store_transition(state, action, reward, new_state, done)
 
+	"""
 	# are we supposed to save the target model or the training model?
 	def getFilename(self, filename=None, filenameAppendage=None, intelligentFilename = True, directory = None):
 		if directory != None:
@@ -202,6 +319,79 @@ class AgentDQN_basic():
 
 	def load_model(self):
 		self.q_network = load_model(self.filename + '.h5')
+	"""
+
+	def save_models(self):
+		print('... saving model ...')
+		self.q_network.save(self.saveDirectory + '/q_model.h5')
+
+	def load_models(self):
+		print('... loading model ...')
+		self.q_network = load_model(self.saveDirectory + '/q_model.h5')
+
+	def logScore(self, score):
+		self.scores.append(score)
+		self.epsilonHistory.append(self.epsilon)
+
+	def save_all(self):
+		print('... saving entire actor/ RL state ...')
+		afile = open(self.saveDirectory + '/hyperparams.pkl', 'wb')
+		pickle.dump((self.layerSizeList,self.lr,self.input_dims,self.gamma,self.batchSize,self.timeStepNumLearns,
+				self.timeStepNumActionsChoosen,self.n_actions,self.learnInterval, self.epsilon, self.epsilon_decay,
+				self.minEpsilon, self.gameName,self.scores, self.epsilonHistory), afile)
+		afile.close()		
+		afile = open(self.saveDirectory + '/memory.pkl', 'wb')
+		pickle.dump(self.memory,afile)
+		afile.close()
+		self.save_models()
+		plt.figure()
+		plt.plot(self.scores)
+		if len(self.scores) > 0:
+			minValue = min(self.scores)
+			maxValue = max(self.scores)
+			epsilonPlotting = []
+			for epsilon in self.epsilonHistory:
+				epsilonPlotting.append(epsilon*(maxValue-minValue)+minValue)
+			plt.plot(epsilonPlotting)
+		plt.savefig(self.saveDirectory + '/RESULTS_epochs' + str(len(self.scores)) + '_score' + str(self.getAveScore()) + '.png')
+		self.saveModelForTFLite()
+
+	def saveModelForTFLite(self):
+		with open(self.saveDirectory + '/TeensyModel.h', 'w') as f:
+			text = port(self.q_network, optimize=False, pretty_print=True, variable_name='modelParams')
+			text = text.replace(' int ', ' long ') # model size may be too big to describe length in int
+			text = text.replace('const', '') # for live updates, this array needs to be modifyable
+			f.write(text)
+
+	def getTFLiteModelPath(self):
+		return(self.saveDirectory + '/TeensyModel.h')
+
+	def getAveScore(self):
+		return(np.mean(self.scores[-100:]))
+
+	def loadStoredData(self):
+		afile = open(self.saveDirectory + '/hyperparams.pkl', 'rb')
+		self.layerSizeList,self.lr,self.input_dims,self.gamma,self.batchSize,self.timeStepNumLearns,\
+				self.timeStepNumActionsChoosen,self.n_actions,self.learnInterval, self.epsilon, self.epsilon_decay,\
+				self.minEpsilon, self.gameName,self.scores, self.epsilonHistory = pickle.load(afile)
+		afile.close()
+		afile = open(self.saveDirectory + '/memory.pkl', 'rb')
+		self.memory = pickle.load(afile)
+		afile.close()
+
+	def archive(self):
+		print("... Archiving Model At " + str(len(self.scores)) + " Epochs ...")
+		self.save_all()
+		archiveDir = "/ARCHIVE_epoch" + str(len(self.scores))
+		os.mkdir(self.saveDirectory + archiveDir)
+		#shutil.copytree(self.saveDirectory + "/modelWeights", self.saveDirectory + archiveDir + "/modelWeights")
+		#shutil.copytree(self.saveDirectory + "/models", self.saveDirectory + archiveDir + "/models")
+		shutil.copy2(self.saveDirectory + '/memory.pkl', self.saveDirectory + archiveDir)
+		shutil.copy2(self.saveDirectory + '/hyperparams.pkl', self.saveDirectory + archiveDir)
+		shutil.copy2(self.saveDirectory + '/RESULTS_epochs' + str(len(self.scores)) + '_score' + str(self.getAveScore()) + '.png', 
+				self.saveDirectory + archiveDir)
+		shutil.copy2(self.saveDirectory + '/q_model.h5', self.saveDirectory + archiveDir)
+		shutil.copy2(self.saveDirectory + '/TeensyModel.h', self.saveDirectory + archiveDir)
 
 # OBSOLETE Only being kept around for comments and reference. See TrainOnCartpoleFile
 def TrainOnCartPole(LearnInterval='STEP',runNumber=0, showFigures=False, lr=.0001,n_games=150,batchSize = 256,gamma = .95,epsilon = .1):
@@ -347,7 +537,7 @@ if __name__ == '__main__':
 	#visualizeCartPoleModel('CartPole-v1_lr0.0001_nGames1000_LIntervalSTEP_batchSize256_gamma0.97_epsilon0.2_run400_score196.14')
 	#visualizeCartPoleModel('CartPole-v1_lr0.0001_nGames1000_LIntervalSTEP_batchSize256_gamma0.97_epsilon0.2_run600_score224.0')
 	#visualizeCartPoleModel('CartPole-v1_lr0.0001_nGames1000_LIntervalSTEP_batchSize256_gamma0.97_epsilon0.2_run700_score499.0')
-	visualizeCartPoleModel('CartPole-v1_lr0.0001_nGames500_LIntervalSTEP_batchSize256_gamma0.97_epsilon0.2_run1000_score499.0')
+	#visualizeCartPoleModel('CartPole-v1_lr0.0001_nGames500_LIntervalSTEP_batchSize256_gamma0.97_epsilon0.2_run1000_score499.0')
 # 
 
 # Python dqn_V0.py

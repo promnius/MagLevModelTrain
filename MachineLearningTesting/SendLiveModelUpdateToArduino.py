@@ -3,12 +3,19 @@ import serial
 import array
 import time
 
-def sendLiveModelUpdateToArduino(comPort = 'COM6'):
+def sendLiveModelUpdateToArduino(comPort=None, comPortName = 'COM6',filename=None,debug=False):
+	print("PREPARING TO SEND NEW MODEL DATA TO TEENSY")
 	# can we go faster? it's a USB serial port on the other end, and seems to work regardless
 	# of wether or not this speed matches their speed.
-	ser = serial.Serial(comPort, 1000000, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
+	if comPort == None:
+		ser = serial.Serial(comPortName, 1000000, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
+	else:
+		ser = comPort
 
-	dataFile = open('TeensyModel_good.h')
+	if filename==None:
+		dataFile = open('TeensyModel_good.h')
+	else:
+		dataFile = open(filename)
 	modelDataText = dataFile.read()
 	dataFile.close()
 
@@ -34,10 +41,11 @@ def sendLiveModelUpdateToArduino(comPort = 'COM6'):
 
 	modelDataAsByteArray = bytearray(modelDataListAsInts)
 
-	print("Number of bytes to send: " + str(len(modelDataListAsInts)))
-	print("At 1Mega baud, this should take " + str(int((len(modelDataListAsInts)*8.0)/1000)) + "ms")
+	if debug: print("Number of bytes to send: " + str(len(modelDataListAsInts)))
+	if debug: print("At 1Mega baud, this should take " + str(int((len(modelDataListAsInts)*8.0)/1000)) + "ms")
 
 	# NEED TO FLUSH SERIAL BUFFER HERE
+	ser.flushInput()
 	ser.write(bytes([99])) # send a single byte to Teensy to indicate we have data for it. Value doesn't matter.
 		# there is no error checking, we just have to stay synced on number of bytes transmitted (yikes!). This
 		# is the least effort and the least overhead, and so far seems to work, but also a bit ugly. If we ever
@@ -51,15 +59,18 @@ def sendLiveModelUpdateToArduino(comPort = 'COM6'):
 			waiting = False
 		else:
 			print("Received the following: " + str(incomingText))
-		time.sleep(1)
+		time.sleep(.05)
 	#ser.read()
 	
 	ser.write(modelDataAsByteArray)
 
-	while(1):
-		incomingText = ser.readline()
-		print(incomingText)
-		#time.sleep(1)
+	if debug:
+		while(1):
+			incomingText = ser.readline()
+			print(incomingText)
+			#time.sleep(1)
+
+	print("Model finished sending")
 
 if __name__ == '__main__':
 	sendLiveModelUpdateToArduino()

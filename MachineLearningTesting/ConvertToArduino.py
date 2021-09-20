@@ -23,8 +23,10 @@ def main(tfModelName = "TeensyModel", modelName = None, debug=False):
 		#model = tf.keras.models.load_model('results/td3/013_Pendulum_lr0.001-0.001_LI1_bs100_g0.99_t0.005_n0.1_network128-64-64-32/models/actor.h5')
 		#model = tf.keras.models.load_model('results/td3/014_Pendulum_lr0.001-0.001_LI1_bs100_g0.99_t0.005_n0.1_network128-64-64-32/models/actor.h5')
 		#model = tf.keras.models.load_model('break_me.h5')
-		model = tf.keras.models.load_model('results/td3/022_Pendulum_lr0.001-0.001_LI1_bs100_g0.99_t0.005_n0.05_network128-128-64-64-32/models/actor.h5')
+		#model = tf.keras.models.load_model('results/td3/022_Pendulum_lr0.001-0.001_LI1_bs100_g0.99_t0.005_n0.05_network128-128-64-64-32/models/actor.h5')
 		#model = tf.keras.models.load_model('results/td3/024_Pendulum_lr0.001-0.001_LI1_bs100_g0.99_t0.005_n0.05_network128-128-64-64-32/models/actor.h5')
+
+		model = tf.keras.models.load_model('results/DQNbasic_lr0.0001_LISTEP_bs256_g0.95_e1_t0.05_network4x64_run1100_numGames500_score-11669.970607377209.h5')
 	else:
 		model = tf.keras.models.load_model('results/' + modelName + '.h5')
 

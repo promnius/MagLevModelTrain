@@ -14,7 +14,7 @@ import math
 
 
 def train(numGames=500,lr = .0001, gamma = 0.97, epsilon = .2, 
-		epsilon_decay = 0.99, batchSize = 64,filename='model', learnInterval=1,layerCount=4,layerUnits=64):
+		epsilon_decay = 0.99, batchSize = 64, learnInterval=1,layerSizeList = [64,64,64,64],uniqueID=None):
 	startTime = time()
 	env=gym()
 	trainCounter = 0
@@ -24,10 +24,11 @@ def train(numGames=500,lr = .0001, gamma = 0.97, epsilon = .2,
 	state_dim = (5,)
 
 	# Create agent
-	agent = AgentDQN_basic(state_dim, action_dim, batchSize=batchSize, lr=lr, gamma=gamma, epsilon=epsilon, eps_dec=epsilon_decay,
-						filename=filename, mem_size=1000000, layerCount=layerCount, layerUnits=layerUnits)
-
-	scores = []
+	if uniqueID == None:
+		agent = AgentDQN_basic(state_dim, action_dim, batchSize=batchSize, lr=lr, gamma=gamma, epsilon=epsilon, eps_dec=epsilon_decay,
+							mem_size=1000000, layerSizeList = layerSizeList)
+	else:
+		agent = AgentDQN_basic(uniqueID=uniqueID) # use this instead to continue training a previous agent
 
 	# game loop!
 	for i in range(numGames):
@@ -75,17 +76,22 @@ def train(numGames=500,lr = .0001, gamma = 0.97, epsilon = .2,
 		print("learning")
 		for j in range(600):
 			agent.learn()
+			pass
 		print("learning done")
 
 		# PROGRESS TRACKING HOUSEKEEPING
-		scores.append(score)
-		ave_score=np.mean(scores[-100:])
+		agent.logScore(score)
+		#ave_score=np.mean(scores[-100:])
+		ave_score=agent.getAveScore()
+		agent.archive()
 		print('episode: ', i, '/', numGames, 'score %.2f' % score, 'average_score %.2f' % ave_score)
 
-	agent.save_model(filenameAppendage='_score' + str(ave_score), directory = 'results')
+	#agent.save_model(filenameAppendage='_score' + str(ave_score), directory = 'results')
+	#agent.archive() # archive will also save second copies of everything, so if you retrain this model in the future, it will still have this version available
+	#agent.save_all()
 
-	plt.plot(scores)
-	plt.savefig('results/' + agent.getFilename() + '_score' + str(ave_score) + '_SCORES' + '.png')
+	#plt.plot(scores)
+	#plt.savefig('results/' + agent.getFilename() + '_score' + str(ave_score) + '_SCORES' + '.png')
 	endTime = time()
 	print("Total run time in seconds: " + str(endTime - startTime))
 
@@ -104,10 +110,10 @@ def visualize(filename, numGames=1):
 	for i in range(numGames):
 		score = 0
 		old_state = env.reset()
-		for j in range(20000): # more than training to prove it extends indefinitly
-			if j%10000 == 0:
+		for j in range(2000): # more than training to prove it extends indefinitly
+			if j%300 == 0:
 				env.pickNewTarget()
-			env.pickNewTarget(-(math.sin(j/25)*75)+190)
+			#env.pickNewTarget(-(math.sin(j/25)*75)+190)
 			# env.pickNewTarget(-(math.sin(j/10)*75)+190) # Yikes, can't track this with physics, so rough
 			#env.pickNewTarget(-(math.sin(j/10)*25)+190)
 			# env.pickNewTarget(-(math.sin(j/5)*25)+190) # brutal
@@ -123,13 +129,14 @@ if __name__ == '__main__':
 	gpus = tf.config.experimental.list_physical_devices('GPU')
 	for gpu in gpus:
 		tf.config.experimental.set_memory_growth(gpu, True)
-	tf.compat.v1.disable_eager_execution()
+	#tf.compat.v1.disable_eager_execution()
 
-	numGames=500
-	filename=('run1100' + "_numGames" + str(numGames))
-	#train(numGames=numGames,lr = .0001, gamma = 0.95, epsilon = 1, 
-	#		epsilon_decay = 0.99997, batchSize = 256,filename=filename, learnInterval=1, layerCount=4,layerUnits=128)
+	numGames=5
+	train(numGames=numGames,lr = .0001, gamma = 0.95, epsilon = 1, 
+			epsilon_decay = 0.99997, batchSize = 256,learnInterval=1, layerSizeList=[64,64,64,64], uniqueID=None)
 	# epsilon_decay = .9999 means 20,000 steps to reach .1, or 33 runs of semi-random (assuming numGames >133)
+	# if uniqueID is used to continue training, numGames is the only other parameter that matters. Note that epsilon
+	# will return to eps_min at the beginning and follow our hardcoded termination steps
 
 
 	# best model trained with intermittent training so far, still not perfect
@@ -191,8 +198,8 @@ if __name__ == '__main__':
 	# 32x anything was messy
 	# 64x2 was beautiful. 64x3 wasn't. All 64x4 and above worked well
 	# 128x2 and 128x3 worked, 128x4 had slightly more instability but still generally found a solution
-	visualize('results/DQNbasic_lr0.0001_LISTEP_bs256_g0.95_e1_t0.05_network2x64_run1100_numGames500_score-12333.222940476711')
-	visualize('results/DQNbasic_lr0.0001_LISTEP_bs256_g0.95_e1_t0.05_network3x64_run1100_numGames500_score-21594.4939838892')
+	#visualize('results/DQNbasic_lr0.0001_LISTEP_bs256_g0.95_e1_t0.05_network2x64_run1100_numGames500_score-12333.222940476711')
+	#visualize('results/DQNbasic_lr0.0001_LISTEP_bs256_g0.95_e1_t0.05_network3x64_run1100_numGames500_score-21594.4939838892')
 
 
 	#python TrainDiscreteMagLevSim.py
